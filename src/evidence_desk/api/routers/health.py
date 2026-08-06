@@ -2,6 +2,7 @@
 
 from fastapi import APIRouter, Request
 
+from evidence_desk.api.dependencies import ReadinessServiceDependency
 from evidence_desk.api.schemas.common import (
     ErrorResponse,
     HealthResponse,
@@ -11,7 +12,6 @@ from evidence_desk.api.schemas.common import (
     VersionResponse,
 )
 from evidence_desk.core.config import get_settings
-from evidence_desk.core.dependency_checks import check_dependencies
 from evidence_desk.core.errors import AppError
 
 router = APIRouter(tags=["system"])
@@ -41,23 +41,28 @@ def health(request: Request) -> SuccessResponse[HealthResponse]:
     responses={503: {"model": ErrorResponse}},
     summary="检查外部依赖是否就绪",
 )
-async def ready(request: Request) -> SuccessResponse[ReadyResponse]:
+async def ready(
+    request: Request,
+    readiness_service: ReadinessServiceDependency,
+) -> SuccessResponse[ReadyResponse]:
     """检查必要的外部依赖是否可用。"""
 
     settings = get_settings()
-    dependencies = await check_dependencies(settings)
-    unavailable = [name for name, status in dependencies.items() if status != "ok"]
-    if unavailable:
+    result = await readiness_service.evaluate(settings)
+    if not result.is_ready:
         raise AppError(
             code="DEPENDENCIES_UNAVAILABLE",
             message="必要外部依赖不可用",
             status_code=503,
-            details={"dependencies": dependencies, "unavailable": unavailable},
+            details={
+                "dependencies": result.dependencies,
+                "unavailable": list(result.unavailable),
+            },
             retryable=True,
         )
 
     return SuccessResponse(
-        data=ReadyResponse(dependencies=dependencies),
+        data=ReadyResponse(dependencies=result.dependencies),
         meta=_success_meta(request),
     )
 

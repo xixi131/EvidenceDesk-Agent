@@ -1,4 +1,4 @@
-"""应用层的外部服务就绪检查。"""
+"""PostgreSQL 和 Weaviate 的外部就绪探测。"""
 
 import asyncio
 import logging

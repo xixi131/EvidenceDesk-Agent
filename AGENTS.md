@@ -137,6 +137,9 @@ Do not provide code without explaining why it is structured that way.
 - Weaviate stores searchable chunks and vectors.
 - LangGraph Checkpointer stores graph state and execution position.
 - These three storage responsibilities must remain separate.
+- API Router must not directly create PostgreSQL, Weaviate, GitHub, or model clients.
+- Application modules orchestrate use cases; Infrastructure modules implement external I/O; `main.py` is the composition root that wires them together.
+- Keep the modular monolith shallow: default directory depth is at most one subpackage below a top-level capability, and create Ports only when a Fake or second implementation is actually needed.
 - All loops and retries must have explicit upper bounds.
 - Side-effecting tools require idempotency and human approval where appropriate.
 - Every answer based on RAG must carry traceable citations.

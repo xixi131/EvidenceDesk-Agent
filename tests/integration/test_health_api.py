@@ -45,13 +45,15 @@ async def test_ready_returns_ok_when_dependencies_are_available(
     client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def fake_check_dependencies(settings: object) -> dict[str, str]:
-        return {"postgresql": "ok", "weaviate": "ok"}
+    from evidence_desk.application.readiness import ReadinessResult
 
-    monkeypatch.setattr(
-        "evidence_desk.api.routers.health.check_dependencies",
-        fake_check_dependencies,
-    )
+    async def fake_evaluate(settings: object) -> ReadinessResult:
+        return ReadinessResult(
+            dependencies={"postgresql": "ok", "weaviate": "ok"},
+            unavailable=(),
+        )
+
+    monkeypatch.setattr(app.state.readiness_service, "evaluate", fake_evaluate)
 
     response = await client.get("/ready")
 
@@ -67,13 +69,15 @@ async def test_ready_identifies_unavailable_dependencies(
     client: AsyncClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
-    async def fake_check_dependencies(settings: object) -> dict[str, str]:
-        return {"postgresql": "ok", "weaviate": "unavailable"}
+    from evidence_desk.application.readiness import ReadinessResult
 
-    monkeypatch.setattr(
-        "evidence_desk.api.routers.health.check_dependencies",
-        fake_check_dependencies,
-    )
+    async def fake_evaluate(settings: object) -> ReadinessResult:
+        return ReadinessResult(
+            dependencies={"postgresql": "ok", "weaviate": "unavailable"},
+            unavailable=("weaviate",),
+        )
+
+    monkeypatch.setattr(app.state.readiness_service, "evaluate", fake_evaluate)
 
     response = await client.get("/ready")
 
