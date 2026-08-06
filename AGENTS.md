@@ -114,6 +114,9 @@ That document is the single source of truth for:
 
 Default language is Chinese. Project-owned code comments, docstrings, Swagger/CI display text, and Git commit messages must use Chinese by default; identifiers, protocol fields, stable error codes, and third-party names may remain in English. If the user does not specify a mode, follow the mode-selection rules in that document. Do not duplicate or redefine the collaboration contract in this file.
 
+
+For concept-teaching tasks, use the `plain-language-teaching` skill when available. Before introducing terminology, first state the direct relationship between the user's existing artifact or knowledge and the code being implemented, for example: `manifest.json documents entry -> SourceDocument(BaseModel)`. Reuse the user's own explanation, correct only inaccuracies, distinguish completed preparation from current implementation, and use real project data before abstractions. If the user says they still do not understand, stop implementation and explain one abstraction level lower before continuing.
+
 ## 5. Development task output
 
 All development-task explanations, validation reports, teaching reviews, and user exercises must follow sections 7–9 of:
