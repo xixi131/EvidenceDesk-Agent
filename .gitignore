@@ -47,5 +47,5 @@ weaviate_data/
 volumes/
 
 # Downloaded model files and caches
-models/
+/models/
 .cache/
