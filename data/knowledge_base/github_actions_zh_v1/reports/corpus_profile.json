@@ -1,0 +1,121 @@
+{
+  "profile_version": "github-actions-corpus-profile-v1",
+  "generated_on": "2026-08-05",
+  "source_dataset_version": "github-actions-zh-2026-08-05-v1",
+  "source_repository_commit": "d19b6951e376efb7bd26fd1c0369158d1641d139",
+  "document_count": 33,
+  "total_character_count": 416946,
+  "size_statistics": {
+    "minimum": 793,
+    "median": 2203,
+    "p75": 6726,
+    "p90": 12416,
+    "p95": 35474,
+    "maximum": 221909
+  },
+  "total_heading_count": 586,
+  "total_code_block_count": 262,
+  "category_counts": {
+    "concepts_and_syntax": 8,
+    "monitoring_and_troubleshooting": 6,
+    "rest_api": 3,
+    "runner": 4,
+    "security_and_permissions": 4,
+    "workflow_run_management": 8
+  },
+  "language_profile_counts": {
+    "chinese_dominant": 20,
+    "english_dominant": 4,
+    "mixed_technical": 9
+  },
+  "risk_flag_counts": {
+    "english_dominant": 4,
+    "english_relative_links": 1,
+    "escaped_callouts": 21,
+    "inline_html": 22,
+    "inline_svg": 16,
+    "large_document": 4,
+    "many_code_blocks": 3,
+    "mixed_language_or_code_heavy": 9,
+    "oversized_document": 2,
+    "relative_links": 31
+  },
+  "baseline_summary": {
+    "included_document_count": 29,
+    "excluded_document_count": 4,
+    "included_character_count": 124317,
+    "excluded_character_count": 292629
+  },
+  "largest_documents": [
+    {
+      "document_id": "github_actions_zh_actions__reference__workflows-and-actions__workflow-syntax",
+      "title": "GitHub Actions 的工作流语法",
+      "character_count": 221909,
+      "language_profile": "english_dominant",
+      "baseline_included": false
+    },
+    {
+      "document_id": "github_actions_zh_rest__actions__workflow-runs",
+      "title": "工作流运行的 REST API 终结点",
+      "character_count": 51792,
+      "language_profile": "english_dominant",
+      "baseline_included": false
+    },
+    {
+      "document_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+      "title": "将标签与自托管运行程序结合使用",
+      "character_count": 35474,
+      "language_profile": "mixed_technical",
+      "baseline_included": true
+    },
+    {
+      "document_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+      "title": "对自托管运行程序进行监视和故障排除",
+      "character_count": 12416,
+      "language_profile": "mixed_technical",
+      "baseline_included": true
+    },
+    {
+      "document_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+      "title": "故障排除工作流",
+      "character_count": 10362,
+      "language_profile": "chinese_dominant",
+      "baseline_included": true
+    },
+    {
+      "document_id": "github_actions_zh_rest__actions__workflows",
+      "title": "工作流的 REST API 终结点",
+      "character_count": 10083,
+      "language_profile": "english_dominant",
+      "baseline_included": false
+    },
+    {
+      "document_id": "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+      "title": "使用工作流运行日志",
+      "character_count": 9601,
+      "language_profile": "chinese_dominant",
+      "baseline_included": true
+    },
+    {
+      "document_id": "github_actions_zh_rest__actions__workflow-jobs",
+      "title": "工作流作业的 REST API 终结点",
+      "character_count": 8845,
+      "language_profile": "english_dominant",
+      "baseline_included": false
+    },
+    {
+      "document_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+      "title": "管理缓存",
+      "character_count": 6726,
+      "language_profile": "mixed_technical",
+      "baseline_included": true
+    },
+    {
+      "document_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+      "title": "重新运行工作流程和作业",
+      "character_count": 6492,
+      "language_profile": "chinese_dominant",
+      "baseline_included": true
+    }
+  ]
+}
