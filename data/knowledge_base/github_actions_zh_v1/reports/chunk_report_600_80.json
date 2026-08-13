@@ -1,0 +1,124 @@
+{
+  "report_version": "github-actions-chunk-quality-report-v1",
+  "source_dataset_version": "github-actions-zh-2026-08-05-v1",
+  "baseline_version": "github-actions-zh-baseline-v1",
+  "cleaning_rules_version": "github-actions-cleaning-v1",
+  "chunk_config_version": "structure-then-recursive-600-80-v1",
+  "generated_at": "2026-08-13T12:18:48.645968Z",
+  "document_count": 29,
+  "chunk_count": 293,
+  "chunk_size": 600,
+  "chunk_overlap": 80,
+  "min_chunk_length": 3,
+  "max_chunk_length": 1409,
+  "average_chunk_length": 234.8976109215017,
+  "p50_chunk_length": 166,
+  "p95_chunk_length": 569,
+  "short_chunk_threshold": 100,
+  "short_chunk_count": 113,
+  "long_chunk_count": 4,
+  "duplicate_content_hash_count": 7,
+  "duplicate_chunk_id_count": 0,
+  "chunk_count_by_document": {
+    "github_actions_zh_actions__concepts__runners__self-hosted-runners": 3,
+    "github_actions_zh_actions__concepts__security__compromised-runners": 14,
+    "github_actions_zh_actions__concepts__security__github_token": 3,
+    "github_actions_zh_actions__concepts__security__script-injections": 9,
+    "github_actions_zh_actions__concepts__security__secrets": 8,
+    "github_actions_zh_actions__concepts__workflows-and-actions__contexts": 6,
+    "github_actions_zh_actions__concepts__workflows-and-actions__dependency-caching": 5,
+    "github_actions_zh_actions__concepts__workflows-and-actions__expressions": 5,
+    "github_actions_zh_actions__concepts__workflows-and-actions__variables": 4,
+    "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts": 5,
+    "github_actions_zh_actions__concepts__workflows-and-actions__workflows": 6,
+    "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels": 15,
+    "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot": 51,
+    "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__use-in-a-workflow": 13,
+    "github_actions_zh_actions__how-tos__manage-workflow-runs__approve-runs-from-forks": 6,
+    "github_actions_zh_actions__how-tos__manage-workflow-runs__cancel-a-workflow-run": 3,
+    "github_actions_zh_actions__how-tos__manage-workflow-runs__delete-a-workflow-run": 1,
+    "github_actions_zh_actions__how-tos__manage-workflow-runs__disable-and-enable-workflows": 6,
+    "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts": 9,
+    "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches": 7,
+    "github_actions_zh_actions__how-tos__manage-workflow-runs__manually-run-a-workflow": 15,
+    "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs": 19,
+    "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging": 4,
+    "github_actions_zh_actions__how-tos__monitor-workflows__use-the-visualization-graph": 1,
+    "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs": 21,
+    "github_actions_zh_actions__how-tos__monitor-workflows__view-job-condition-logs": 5,
+    "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history": 17,
+    "github_actions_zh_actions__how-tos__troubleshoot-workflows": 29,
+    "github_actions_zh_actions__reference__workflows-and-actions__workflow-cancellation": 3
+  },
+  "code_block_warnings": [
+    {
+      "code": "OVERSIZED_CODE_BLOCK",
+      "message": "完整代码块超过字符上限，已保留原样等待人工查看。",
+      "chunk_id": "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs__structure-then-recursive-600-80-v1__0013__a70f773e20407c6b",
+      "parent_doc_id": "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+      "source_relative_path": "cleaned/actions/how-tos/monitor-workflows/use-workflow-run-logs.md",
+      "section_path": [
+        "使用工作流运行日志",
+        "删除日志",
+        "以编程方式删除日志",
+        "示例脚本"
+      ],
+      "source_url": "https://docs.github.com/zh/actions/how-tos/monitor-workflows/use-workflow-run-logs",
+      "content_length": 1154
+    },
+    {
+      "code": "OVERSIZED_CODE_BLOCK",
+      "message": "完整代码块超过字符上限，已保留原样等待人工查看。",
+      "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches__structure-then-recursive-600-80-v1__0006__d9d392d5e84b93d1",
+      "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+      "source_relative_path": "cleaned/actions/how-tos/manage-workflow-runs/manage-caches.md",
+      "section_path": [
+        "管理缓存",
+        "强制删除缓存条目"
+      ],
+      "source_url": "https://docs.github.com/zh/actions/how-tos/manage-workflow-runs/manage-caches",
+      "content_length": 819
+    },
+    {
+      "code": "UNCLOSED_CODE_FENCE",
+      "message": "代码围栏没有闭合，无法确认代码块是否完整。",
+      "chunk_id": "github_actions_zh_actions__concepts__security__github_token__structure-then-recursive-600-80-v1__0003__15125f1bd8eff138",
+      "parent_doc_id": "github_actions_zh_actions__concepts__security__github_token",
+      "source_relative_path": "cleaned/actions/concepts/security/github_token.md",
+      "section_path": [
+        "GITHUB_TOKEN",
+        "关于 `GITHUB_TOKEN`"
+      ],
+      "source_url": "https://docs.github.com/zh/actions/concepts/security/github_token",
+      "content_length": 1409
+    },
+    {
+      "code": "OVERSIZED_CODE_BLOCK",
+      "message": "完整代码块超过字符上限，已保留原样等待人工查看。",
+      "chunk_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot__structure-then-recursive-600-80-v1__0017__e3950247e3e10b49",
+      "parent_doc_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+      "source_relative_path": "cleaned/actions/how-tos/manage-runners/self-hosted-runners/monitor-and-troubleshoot.md",
+      "section_path": [
+        "对自托管运行程序进行监视和故障排除",
+        "网络连接疑难解答",
+        "检查自托管的运行器网络连接"
+      ],
+      "source_url": "https://docs.github.com/zh/actions/how-tos/manage-runners/self-hosted-runners/monitor-and-troubleshoot",
+      "content_length": 1076
+    },
+    {
+      "code": "UNCLOSED_CODE_FENCE",
+      "message": "代码围栏没有闭合，无法确认代码块是否完整。",
+      "chunk_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot__structure-then-recursive-600-80-v1__0051__bf7eb6d554ec48cf",
+      "parent_doc_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+      "source_relative_path": "cleaned/actions/how-tos/manage-runners/self-hosted-runners/monitor-and-troubleshoot.md",
+      "section_path": [
+        "对自托管运行程序进行监视和故障排除",
+        "网络连接疑难解答",
+        "检查自托管的运行器网络连接"
+      ],
+      "source_url": "https://docs.github.com/zh/actions/how-tos/manage-runners/self-hosted-runners/monitor-and-troubleshoot",
+      "content_length": 3
+    }
+  ]
+}

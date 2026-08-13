@@ -263,7 +263,30 @@ P50/P95 长度
 重复 Chunk 数
 ```
 
-## 11. 第一组分块实验
+## 11. Chunk Run 产物和代码版本边界
+
+每次有明确数据集、清洗规则和 Chunk 配置的可比较运行，必须保留一个可追溯的 Chunk Run。不是每个 Chunk 单独保存一个文件，而是一个 Run 目录保存：
+
+```text
+data/knowledge_base/github_actions_zh_v1/chunk_runs/<chunk_run_id>/
+├── chunk_run_manifest.json
+├── chunks.jsonl
+└── chunk_report.json
+```
+
+其中：
+
+- `chunks.jsonl`：一行一个 Chunk，便于流式读取和人工抽查；
+- `chunk_run_manifest.json`：记录 dataset、cleaning rules、chunk strategy、chunk config、git commit 和生成时间；
+- `chunk_report.json`：记录数量、长度分布、重复和截断警告。
+
+相同输入与配置重复运行时，必须生成相同 Chunk ID 和内容哈希，并通过幂等逻辑复用或安全覆盖同一 Run；不同配置必须产生不同 `chunk_run_id`，不能混写。
+
+切块算法代码的历史由 Git Commit、Tag 或发布分支保留，不在运行目录中复制 `splitter_v1.py`、`splitter_v2.py`。运行目录保存的是当时的输入、配置和结果，代码版本通过 `git_commit` 追溯。
+
+切块策略通过 Protocol 与具体实现解耦。第一版使用 `StructureThenRecursiveChunkingStrategy`；后续可在不修改调用方的情况下加入其他策略，并通过策略名称和版本写入 Chunk Run Manifest。
+
+## 12. 第一组分块实验
 
 固定：
 
@@ -293,7 +316,7 @@ P50/P95 长度
 - 多文档问题表现；
 - 失败案例。
 
-## 12. 如何根据失败案例调整
+## 13. 如何根据失败案例调整
 
 ### 正确内容被切成两块
 
@@ -315,7 +338,7 @@ P50/P95 长度
 
 动作：增大候选 top_n、使用 Hybrid、加入 Reranker；不要直接把最终上下文 top_k 无限增大。
 
-## 13. 进阶策略什么时候加入
+## 14. 进阶策略什么时候加入
 
 ### Parent-Child Retrieval
 
@@ -339,7 +362,7 @@ P50/P95 长度
 
 代价：需要额外 LLM 调用和索引成本。先通过标题与 section_path 解决。
 
-## 14. 分块决策完成标准
+## 15. 分块决策完成标准
 
 不是“代码能切”，而是：
 
