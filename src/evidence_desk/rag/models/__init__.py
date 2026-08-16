@@ -12,6 +12,7 @@ from evidence_desk.rag.models.cleaning import (
     CleaningWarning,
     ParsedDocument,
 )
+from evidence_desk.rag.models.retrieval import RetrievalHit
 from evidence_desk.rag.models.section import Section
 from evidence_desk.rag.models.source import (
     BaselineDocumentSelection,
@@ -31,6 +32,7 @@ __all__ = [
     "CleaningResult",
     "CleaningWarning",
     "ParsedDocument",
+    "RetrievalHit",
     "Section",
     "SourceDocument",
     "SourceManifest",

@@ -1,6 +1,7 @@
 """从环境变量集中加载应用配置。"""
 
 from functools import lru_cache
+from pathlib import Path
 
 from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -25,12 +26,14 @@ class Settings(BaseSettings):
 
     database_url: str = "postgresql://localhost:5432/evidence_desk"
     weaviate_url: str = "http://localhost:8080"
+    weaviate_grpc_port: int = Field(default=50051, ge=1, le=65535)
 
     github_api_base_url: str = "https://api.github.com"
     github_api_version: str = "2026-03-10"
     github_token: str | None = None
 
     embedding_model: str = "BAAI/bge-small-zh-v1.5"
+    embedding_cache_dir: Path = Path(".cache/huggingface")
     retrieval_top_k: int = Field(default=5, ge=1, le=50)
 
 
