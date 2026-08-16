@@ -5,6 +5,7 @@ from evidence_desk.rag.models.chunk_quality import (
     ChunkQualityReport,
     ChunkQualityWarning,
 )
+from evidence_desk.rag.models.citation import Citation
 from evidence_desk.rag.models.cleaning import (
     CleaningDocumentReport,
     CleaningReport,
@@ -27,6 +28,7 @@ __all__ = [
     "Chunk",
     "ChunkQualityReport",
     "ChunkQualityWarning",
+    "Citation",
     "CleaningDocumentReport",
     "CleaningReport",
     "CleaningResult",

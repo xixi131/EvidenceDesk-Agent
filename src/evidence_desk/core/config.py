@@ -36,6 +36,12 @@ class Settings(BaseSettings):
     embedding_cache_dir: Path = Path(".cache/huggingface")
     retrieval_top_k: int = Field(default=5, ge=1, le=50)
 
+    # 回答生成（阶段 1C 证据约束回答）。
+    # API Key 只从环境/.env 读取，绝不写进代码或提交进仓库。
+    openai_api_key: str | None = None
+    answer_model: str = "gpt-4o-mini"
+    answer_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
+
 
 @lru_cache
 def get_settings() -> Settings:
