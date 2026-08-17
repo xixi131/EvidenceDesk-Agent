@@ -39,6 +39,8 @@ class Settings(BaseSettings):
     # 回答生成（阶段 1C 证据约束回答）。
     # API Key 只从环境/.env 读取，绝不写进代码或提交进仓库。
     openai_api_key: str | None = None
+    # 中转站/自建代理需要自定义 Base URL；留空则用 OpenAI 官方地址。
+    openai_base_url: str | None = None
     answer_model: str = "gpt-4o-mini"
     answer_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
 

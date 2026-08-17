@@ -9,8 +9,12 @@ from evidence_desk.core.errors import AppError
 class OpenAIChatClient:
     """用 OpenAI 官方 SDK 实现应用层的 ``LLMClient`` 端口。"""
 
-    def __init__(self, *, api_key: str, model: str) -> None:
-        self._client = OpenAI(api_key=api_key)
+    def __init__(
+        self, *, api_key: str, model: str, base_url: str | None = None
+    ) -> None:
+        # base_url 为 None 时，SDK 使用 OpenAI 官方地址；
+        # 传入中转站地址即可把请求发到代理服务。
+        self._client = OpenAI(api_key=api_key, base_url=base_url)
         self._model = model
 
     def complete(self, *, system: str, user: str, temperature: float) -> str:

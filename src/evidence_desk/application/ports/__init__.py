@@ -5,5 +5,6 @@
 """
 
 from evidence_desk.application.ports.llm import LLMClient
+from evidence_desk.application.ports.retrieval import ChunkRetriever, QueryEmbedder
 
-__all__ = ["LLMClient"]
+__all__ = ["ChunkRetriever", "LLMClient", "QueryEmbedder"]
