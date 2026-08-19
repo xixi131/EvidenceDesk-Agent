@@ -1,0 +1,12 @@
+{"id": "smoke-01", "question": "如何启用 ACTIONS_STEP_DEBUG 调试日志？", "relevant_doc_ids": ["github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging"], "should_answer": true, "tags": ["exact_identifier", "debug"]}
+{"id": "smoke-02", "question": "GitHub Actions 里怎么管理和清理缓存？", "relevant_doc_ids": ["github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches"], "should_answer": true, "tags": ["cache"]}
+{"id": "smoke-03", "question": "如何下载工作流运行产生的构件（artifact）？", "relevant_doc_ids": ["github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts"], "should_answer": true, "tags": ["artifact"]}
+{"id": "smoke-04", "question": "GITHUB_TOKEN 有什么用，它的权限是怎么回事？", "relevant_doc_ids": ["github_actions_zh_actions__concepts__security__github_token"], "should_answer": true, "tags": ["exact_identifier", "security"]}
+{"id": "smoke-05", "question": "怎么在工作流里创建和使用机密（secret）？", "relevant_doc_ids": ["github_actions_zh_actions__concepts__security__secrets"], "should_answer": true, "tags": ["secret", "security"]}
+{"id": "smoke-06", "question": "如何给自托管运行器添加标签？", "relevant_doc_ids": ["github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels"], "should_answer": true, "tags": ["runner"]}
+{"id": "smoke-07", "question": "我自己搭的 runner 好像出问题了，怎么排查？", "relevant_doc_ids": ["github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot"], "should_answer": true, "tags": ["runner", "semantic_paraphrase"]}
+{"id": "smoke-08", "question": "跑到一半的工作流不想要了，怎么把它停掉？", "relevant_doc_ids": ["github_actions_zh_actions__how-tos__manage-workflow-runs__cancel-a-workflow-run", "github_actions_zh_actions__reference__workflows-and-actions__workflow-cancellation"], "should_answer": true, "tags": ["multi_document", "semantic_paraphrase"]}
+{"id": "smoke-09", "question": "失败的作业可以只重跑失败的部分吗？", "relevant_doc_ids": ["github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs"], "should_answer": true, "tags": ["rerun"]}
+{"id": "smoke-10", "question": "工作流失败了，有什么排查思路？", "relevant_doc_ids": ["github_actions_zh_actions__how-tos__troubleshoot-workflows"], "should_answer": true, "tags": ["semantic_paraphrase"]}
+{"id": "smoke-11", "question": "帮我用 Python 写一个快速排序算法。", "relevant_doc_ids": [], "should_answer": false, "tags": ["no_answer"]}
+{"id": "smoke-12", "question": "今天上海的天气怎么样？", "relevant_doc_ids": [], "should_answer": false, "tags": ["no_answer"]}
