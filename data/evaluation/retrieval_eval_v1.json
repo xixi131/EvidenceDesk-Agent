@@ -1,0 +1,446 @@
+{
+  "embedding_model": "BAAI/bge-small-zh-v1.5",
+  "k_values": [
+    2,
+    5,
+    10,
+    20
+  ],
+  "num_cases": 10,
+  "avg_recall": {
+    "2": 0.85,
+    "5": 0.85,
+    "10": 0.95,
+    "20": 1.0
+  },
+  "avg_precision": {
+    "2": 0.45,
+    "5": 0.18,
+    "10": 0.1,
+    "20": 0.055
+  },
+  "mrr": 0.8143,
+  "cases": [
+    {
+      "id": "smoke-01",
+      "question": "如何启用 ACTIONS_STEP_DEBUG 调试日志？",
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging"
+      ],
+      "retrieved_doc_ids": [
+        "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging",
+        "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging",
+        "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging",
+        "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__view-job-condition-logs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__concepts__workflows-and-actions__contexts"
+      ],
+      "recall": {
+        "2": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "20": 1.0
+      },
+      "precision": {
+        "2": 0.5,
+        "5": 0.2,
+        "10": 0.1,
+        "20": 0.05
+      },
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "smoke-02",
+      "question": "GitHub Actions 里怎么管理和清理缓存？",
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches"
+      ],
+      "retrieved_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+        "github_actions_zh_actions__concepts__workflows-and-actions__dependency-caching",
+        "github_actions_zh_actions__concepts__workflows-and-actions__dependency-caching",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__delete-a-workflow-run",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__concepts__workflows-and-actions__dependency-caching",
+        "github_actions_zh_actions__concepts__security__github_token",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__concepts__workflows-and-actions__dependency-caching"
+      ],
+      "recall": {
+        "2": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "20": 1.0
+      },
+      "precision": {
+        "2": 0.5,
+        "5": 0.2,
+        "10": 0.1,
+        "20": 0.05
+      },
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "smoke-03",
+      "question": "如何下载工作流运行产生的构件（artifact）？",
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts"
+      ],
+      "retrieved_doc_ids": [
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflows",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manually-run-a-workflow",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflows",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflows",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manually-run-a-workflow",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manually-run-a-workflow",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts"
+      ],
+      "recall": {
+        "2": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "20": 1.0
+      },
+      "precision": {
+        "2": 0.5,
+        "5": 0.2,
+        "10": 0.1,
+        "20": 0.05
+      },
+      "reciprocal_rank": 0.5
+    },
+    {
+      "id": "smoke-04",
+      "question": "GITHUB_TOKEN 有什么用，它的权限是怎么回事？",
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__concepts__security__github_token"
+      ],
+      "retrieved_doc_ids": [
+        "github_actions_zh_actions__concepts__security__github_token",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__concepts__security__compromised-runners",
+        "github_actions_zh_actions__concepts__security__github_token",
+        "github_actions_zh_actions__concepts__security__github_token",
+        "github_actions_zh_actions__concepts__security__compromised-runners",
+        "github_actions_zh_actions__concepts__security__compromised-runners",
+        "github_actions_zh_actions__concepts__security__compromised-runners",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__concepts__security__compromised-runners",
+        "github_actions_zh_actions__concepts__security__compromised-runners",
+        "github_actions_zh_actions__concepts__security__compromised-runners",
+        "github_actions_zh_actions__concepts__security__compromised-runners",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__concepts__security__compromised-runners"
+      ],
+      "recall": {
+        "2": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "20": 1.0
+      },
+      "precision": {
+        "2": 0.5,
+        "5": 0.2,
+        "10": 0.1,
+        "20": 0.05
+      },
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "smoke-05",
+      "question": "怎么在工作流里创建和使用机密（secret）？",
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__concepts__security__secrets"
+      ],
+      "retrieved_doc_ids": [
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts",
+        "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging",
+        "github_actions_zh_actions__concepts__security__secrets",
+        "github_actions_zh_actions__concepts__security__github_token",
+        "github_actions_zh_actions__concepts__security__compromised-runners",
+        "github_actions_zh_actions__concepts__security__compromised-runners",
+        "github_actions_zh_actions__concepts__workflows-and-actions__contexts",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflows",
+        "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs"
+      ],
+      "recall": {
+        "2": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "20": 1.0
+      },
+      "precision": {
+        "2": 0.5,
+        "5": 0.2,
+        "10": 0.1,
+        "20": 0.05
+      },
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "smoke-06",
+      "question": "如何给自托管运行器添加标签？",
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels"
+      ],
+      "retrieved_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__use-in-a-workflow",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__use-in-a-workflow",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__use-in-a-workflow",
+        "github_actions_zh_actions__concepts__runners__self-hosted-runners",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__use-in-a-workflow",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels"
+      ],
+      "recall": {
+        "2": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "20": 1.0
+      },
+      "precision": {
+        "2": 0.5,
+        "5": 0.2,
+        "10": 0.1,
+        "20": 0.05
+      },
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "smoke-07",
+      "question": "我自己搭的 runner 好像出问题了，怎么排查？",
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot"
+      ],
+      "retrieved_doc_ids": [
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+        "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows"
+      ],
+      "recall": {
+        "2": 0.0,
+        "5": 0.0,
+        "10": 1.0,
+        "20": 1.0
+      },
+      "precision": {
+        "2": 0.0,
+        "5": 0.0,
+        "10": 0.1,
+        "20": 0.05
+      },
+      "reciprocal_rank": 0.1429
+    },
+    {
+      "id": "smoke-08",
+      "question": "跑到一半的工作流不想要了，怎么把它停掉？",
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__cancel-a-workflow-run",
+        "github_actions_zh_actions__reference__workflows-and-actions__workflow-cancellation"
+      ],
+      "retrieved_doc_ids": [
+        "github_actions_zh_actions__reference__workflows-and-actions__workflow-cancellation",
+        "github_actions_zh_actions__reference__workflows-and-actions__workflow-cancellation",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__reference__workflows-and-actions__workflow-cancellation",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__delete-a-workflow-run",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__cancel-a-workflow-run",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__cancel-a-workflow-run",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__approve-runs-from-forks",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflows",
+        "github_actions_zh_actions__concepts__workflows-and-actions__workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history"
+      ],
+      "recall": {
+        "2": 0.5,
+        "5": 0.5,
+        "10": 0.5,
+        "20": 1.0
+      },
+      "precision": {
+        "2": 0.5,
+        "5": 0.2,
+        "10": 0.1,
+        "20": 0.1
+      },
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "smoke-09",
+      "question": "失败的作业可以只重跑失败的部分吗？",
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs"
+      ],
+      "retrieved_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows"
+      ],
+      "recall": {
+        "2": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "20": 1.0
+      },
+      "precision": {
+        "2": 0.5,
+        "5": 0.2,
+        "10": 0.1,
+        "20": 0.05
+      },
+      "reciprocal_rank": 1.0
+    },
+    {
+      "id": "smoke-10",
+      "question": "工作流失败了，有什么排查思路？",
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows"
+      ],
+      "retrieved_doc_ids": [
+        "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+        "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+        "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows"
+      ],
+      "recall": {
+        "2": 1.0,
+        "5": 1.0,
+        "10": 1.0,
+        "20": 1.0
+      },
+      "precision": {
+        "2": 0.5,
+        "5": 0.2,
+        "10": 0.1,
+        "20": 0.05
+      },
+      "reciprocal_rank": 0.5
+    }
+  ]
+}
