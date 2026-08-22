@@ -26,3 +26,12 @@ class ChatResponseData(APIModel):
     answer: str
     answered: bool
     citations: list[CitationView]
+
+
+class AgentChatResponseData(APIModel):
+    """Agent 一次问答返回的数据（比无 Agent 版多一个 intent，暴露路由决策）。"""
+
+    answer: str
+    answered: bool
+    intent: str
+    citations: list[CitationView]

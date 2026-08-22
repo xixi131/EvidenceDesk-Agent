@@ -7,6 +7,7 @@ from fastapi import FastAPI
 
 from evidence_desk.api.exception_handlers import register_exception_handlers
 from evidence_desk.api.middleware.request_context import request_context_middleware
+from evidence_desk.api.routers.agent import router as agent_router
 from evidence_desk.api.routers.chat import router as chat_router
 from evidence_desk.api.routers.health import router as health_router
 from evidence_desk.application.chat_service import ChatService
@@ -29,6 +30,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     避免仅仅「导入本模块」（例如跑测试）就触发加载 torch/weaviate/openai。
     """
 
+    from evidence_desk.agent.graph import build_agent_graph
     from evidence_desk.infrastructure.embedding import BgeEmbeddingAdapter
     from evidence_desk.infrastructure.llm import OpenAIChatClient
     from evidence_desk.infrastructure.weaviate import (
@@ -60,6 +62,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             answer_service,
             top_k=settings.retrieval_top_k,
         )
+        app.state.agent_graph = build_agent_graph(
+            embedder,
+            retriever,
+            answer_service,
+            top_k=settings.retrieval_top_k,
+        )
         yield
     finally:
         client.close()
@@ -76,3 +84,4 @@ app.middleware("http")(request_context_middleware)
 register_exception_handlers(app)
 app.include_router(health_router)
 app.include_router(chat_router)
+app.include_router(agent_router)
