@@ -1,10 +1,11 @@
 """基于 LangGraph Agent 的问答路由。"""
 
-from typing import Any, cast
+from typing import cast
 
 from fastapi import APIRouter, Request
 
 from evidence_desk.agent.graph import MAX_GRAPH_STEPS
+from evidence_desk.agent.state import AgentState
 from evidence_desk.api.dependencies import AgentGraphDependency
 from evidence_desk.api.schemas.chat import (
     AgentChatResponseData,
@@ -12,7 +13,6 @@ from evidence_desk.api.schemas.chat import (
     CitationView,
 )
 from evidence_desk.api.schemas.common import ResponseMeta, SuccessResponse
-from evidence_desk.rag.models import Citation
 
 router = APIRouter(tags=["agent"])
 
@@ -29,20 +29,20 @@ def agent_chat(
 ) -> SuccessResponse[AgentChatResponseData]:
     """经意图路由 → 检索 → 评估 →（必要时改写重试）→ 生成的 Agent 问答。"""
 
-    # invoke：给初始白板（只有 question），LangGraph 跑到 END，返回最终白板。
+    # 只 cast 一次成 AgentState（TypedDict 自带各字段类型），后面取值就无需再 cast。
     final_state = cast(
-        dict[str, Any],
+        AgentState,
         graph.invoke(
             {"question": payload.question},
             {"recursion_limit": MAX_GRAPH_STEPS},
         ),
     )
 
-    citations = cast(list[Citation], final_state.get("citations", []))
+    citations = final_state.get("citations", [])
     data = AgentChatResponseData(
-        answer=cast(str, final_state.get("answer", "")),
-        answered=cast(bool, final_state.get("answered", False)),
-        intent=cast(str, final_state.get("intent", "")),
+        answer=final_state.get("answer", ""),
+        answered=final_state.get("answered", False),
+        intent=final_state.get("intent", ""),
         citations=[
             CitationView(
                 index=citation.index,
