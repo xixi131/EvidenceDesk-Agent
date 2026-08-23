@@ -32,6 +32,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     from evidence_desk.agent.graph import build_agent_graph
     from evidence_desk.infrastructure.embedding import BgeEmbeddingAdapter
+    from evidence_desk.infrastructure.github import GitHubRestClient
     from evidence_desk.infrastructure.llm import OpenAIChatClient
     from evidence_desk.infrastructure.weaviate import (
         WeaviateDenseRetriever,
@@ -51,6 +52,11 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         base_url=settings.openai_base_url,
     )
     answer_service = RagAnswerService(llm, temperature=settings.answer_temperature)
+    gateway = GitHubRestClient(
+        base_url=settings.github_api_base_url,
+        api_version=settings.github_api_version,
+        token=settings.github_token,
+    )
 
     client = connect_to_weaviate(settings)
     try:
@@ -66,10 +72,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             embedder,
             retriever,
             answer_service,
+            gateway,
             top_k=settings.retrieval_top_k,
         )
         yield
     finally:
+        gateway.close()
         client.close()
 
 

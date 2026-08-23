@@ -20,6 +20,7 @@ from evidence_desk.agent.nodes import (
     clarify,
     classify_intent,
     grade_retrieval,
+    make_fetch_workflow_run_node,
     make_generate_answer_node,
     make_retrieve_node,
     rewrite_query,
@@ -27,7 +28,11 @@ from evidence_desk.agent.nodes import (
 )
 from evidence_desk.agent.routing import route_after_grade, route_after_intent
 from evidence_desk.agent.state import AgentState, NodeName
-from evidence_desk.application.ports import ChunkRetriever, QueryEmbedder
+from evidence_desk.application.ports import (
+    ChunkRetriever,
+    GitHubGateway,
+    QueryEmbedder,
+)
 from evidence_desk.application.rag_answer_service import RagAnswerService
 
 MAX_GRAPH_STEPS = 12
@@ -37,6 +42,7 @@ def build_agent_graph(
     embedder: QueryEmbedder,
     retriever: ChunkRetriever,
     answer_service: RagAnswerService,
+    gateway: GitHubGateway,
     *,
     top_k: int,
 ) -> CompiledStateGraph[AgentState, Any, Any, Any]:
@@ -56,6 +62,10 @@ def build_agent_graph(
         NodeName.GENERATE_ANSWER,
         make_generate_answer_node(answer_service),  # type: ignore[arg-type]
     )
+    builder.add_node(
+        NodeName.FETCH_WORKFLOW_RUN,
+        make_fetch_workflow_run_node(gateway),  # type: ignore[arg-type]
+    )
     builder.add_node(NodeName.CLARIFY, clarify)
     builder.add_node(NodeName.SAFE_REFUSAL, safe_refusal)
 
@@ -66,7 +76,12 @@ def build_agent_graph(
     builder.add_conditional_edges(
         NodeName.CLASSIFY_INTENT,
         route_after_intent,
-        [NodeName.RETRIEVE, NodeName.CLARIFY, NodeName.SAFE_REFUSAL],
+        [
+            NodeName.RETRIEVE,
+            NodeName.FETCH_WORKFLOW_RUN,
+            NodeName.CLARIFY,
+            NodeName.SAFE_REFUSAL,
+        ],
     )
 
     # 4) 检索 → 评估（固定边）
@@ -82,8 +97,9 @@ def build_agent_graph(
     # 6) 改写后回到检索，形成"最多 2 次"的循环
     builder.add_edge(NodeName.REWRITE_QUERY, NodeName.RETRIEVE)
 
-    # 7) 三个终点 → END
+    # 7) 各终点 → END
     builder.add_edge(NodeName.GENERATE_ANSWER, END)
+    builder.add_edge(NodeName.FETCH_WORKFLOW_RUN, END)
     builder.add_edge(NodeName.CLARIFY, END)
     builder.add_edge(NodeName.SAFE_REFUSAL, END)
 

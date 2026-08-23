@@ -16,19 +16,28 @@
 - safe_refusal(state)      不安全 / 无证据时安全拒答
 """
 
+import re
 from collections.abc import Callable
 
 from evidence_desk.agent.state import (
     INTENT_AMBIGUOUS,
+    INTENT_BUSINESS_READ,
     INTENT_KNOWLEDGE,
     INTENT_UNSAFE,
     AgentState,
+    RunReference,
 )
-from evidence_desk.application.ports import ChunkRetriever, QueryEmbedder
+from evidence_desk.application.ports import (
+    ChunkRetriever,
+    GitHubGateway,
+    QueryEmbedder,
+    WorkflowRun,
+)
 from evidence_desk.application.rag_answer_service import (
     NO_EVIDENCE_REPLY,
     RagAnswerService,
 )
+from evidence_desk.core.errors import AppError
 
 # 触发「越权/危险操作」判定的关键词（都是写操作，本阶段暂不支持）。
 _WRITE_ACTION_KEYWORDS = (
@@ -72,9 +81,31 @@ _QUERY_NOISE = (
     "!",
 )
 
+# business_read：从问题里解析 owner/repo 与 run_id 的正则，以及找不到时的话术。
+_REPO_RE = re.compile(r"([A-Za-z0-9._-]+)/([A-Za-z0-9._-]+)")
+_RUN_ID_RE = re.compile(r"\b(\d{4,})\b")
+_NO_RUN_REF_REPLY = (
+    "未能从问题中识别出 owner/repo 和 run_id，请提供完整的运行信息，"
+    "例如：github/docs 运行 30964320373 为什么失败？"
+)
+
+
+def parse_run_reference(text: str) -> RunReference | None:
+    """尝试从问题里解析出 (owner, repo, run_id)；解析不出返回 None。"""
+
+    repo_match = _REPO_RE.search(text)
+    run_match = _RUN_ID_RE.search(text)
+    if repo_match is None or run_match is None:
+        return None
+    owner, repo = repo_match.group(1), repo_match.group(2)
+    # 要求 owner/repo 至少含一个字母，避免把 "2026/08" 这种日期误当仓库。
+    if not any(ch.isalpha() for ch in owner + repo):
+        return None
+    return RunReference(owner=owner, repo=repo, run_id=int(run_match.group(1)))
+
 
 def classify_intent(state: AgentState) -> AgentState:
-    """分诊节点：看一眼问题，判定意图，只写回 intent 字段。"""
+    """分诊节点：看一眼问题，判定意图，只写回 intent（业务读取时附带 run_ref）。"""
 
     question = state["question"].strip()
     lowered = question.lower()
@@ -87,7 +118,12 @@ def classify_intent(state: AgentState) -> AgentState:
     if any(keyword in lowered for keyword in _WRITE_ACTION_KEYWORDS):
         return {"intent": INTENT_UNSAFE}
 
-    # 3) 其它 → 当作知识问题，走检索
+    # 3) 能解析出 owner/repo + run_id → 查真实运行事实，走 GitHub 工具
+    run_ref = parse_run_reference(question)
+    if run_ref is not None:
+        return {"intent": INTENT_BUSINESS_READ, "run_ref": run_ref}
+
+    # 4) 其它 → 当作知识问题，走检索
     return {"intent": INTENT_KNOWLEDGE}
 
 
@@ -165,3 +201,39 @@ def safe_refusal(state: AgentState) -> AgentState:
     else:
         answer = NO_EVIDENCE_REPLY
     return {"answer": answer, "answered": False, "citations": []}
+
+
+def make_fetch_workflow_run_node(
+    gateway: GitHubGateway,
+) -> Callable[[AgentState], AgentState]:
+    """工厂：注入 GitHubGateway，返回查询 workflow 运行状态的工具节点。"""
+
+    def fetch_workflow_run(state: AgentState) -> AgentState:
+        ref = state.get("run_ref")
+        if ref is None:
+            return {"answer": _NO_RUN_REF_REPLY, "answered": False, "citations": []}
+        try:
+            run = gateway.get_workflow_run(ref.owner, ref.repo, ref.run_id)
+        except AppError as exc:
+            # 工具出错（404/限流/超时…）不抛给用户，转成友好回答。
+            return {
+                "answer": f"查询运行状态失败：{exc.message}",
+                "answered": False,
+                "citations": [],
+            }
+        return {"answer": _format_run(run, ref), "answered": True, "citations": []}
+
+    return fetch_workflow_run
+
+
+def _format_run(run: WorkflowRun, ref: RunReference) -> str:
+    """把运行事实拼成一段人类可读的回答。"""
+
+    conclusion = run.conclusion or "尚无结论（可能仍在运行）"
+    return (
+        f"工作流「{run.name}」运行 #{run.run_id}"
+        f"（仓库 {ref.owner}/{ref.repo}，分支 {run.head_branch or '未知'}，"
+        f"事件 {run.event}）：\n"
+        f"状态 {run.status}，结论 {conclusion}。\n"
+        f"详情：{run.html_url}"
+    )

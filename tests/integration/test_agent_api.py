@@ -10,6 +10,7 @@ import pytest
 from httpx import ASGITransport
 
 from evidence_desk.agent.graph import build_agent_graph
+from evidence_desk.application.ports import WorkflowJob, WorkflowRun
 from evidence_desk.application.rag_answer_service import RagAnswerService
 from evidence_desk.main import app
 from evidence_desk.rag.models import RetrievalHit
@@ -36,6 +37,31 @@ class FakeLLM:
         return self.reply
 
 
+class FakeGitHubGateway:
+    def __init__(self, run: WorkflowRun) -> None:
+        self._run = run
+
+    def get_workflow_run(self, owner: str, repo: str, run_id: int) -> WorkflowRun:
+        return self._run
+
+    def list_workflow_jobs(
+        self, owner: str, repo: str, run_id: int
+    ) -> list[WorkflowJob]:
+        return []
+
+
+def make_run() -> WorkflowRun:
+    return WorkflowRun(
+        run_id=30964320373,
+        name="CI",
+        status="completed",
+        conclusion="failure",
+        head_branch="main",
+        event="push",
+        html_url="https://github.com/github/docs/actions/runs/30964320373",
+    )
+
+
 def make_hit() -> RetrievalHit:
     return RetrievalHit(
         rank=1,
@@ -56,6 +82,7 @@ def install_agent_graph(*, hits: list[RetrievalHit], reply: str) -> None:
         FakeEmbedder(),
         FakeRetriever(hits),
         answer_service,
+        FakeGitHubGateway(make_run()),
         top_k=5,
     )
 
@@ -95,3 +122,21 @@ async def test_agent_chat_refuses_unsafe_request() -> None:
     assert body["data"]["intent"] == "unsafe"
     assert body["data"]["answered"] is False
     assert body["data"]["citations"] == []
+
+
+@pytest.mark.asyncio
+async def test_agent_chat_uses_github_tool_for_run_question() -> None:
+    install_agent_graph(hits=[make_hit()], reply="不该被调用")
+
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/agent/chat",
+            json={"question": "github/docs 运行 30964320373 为什么失败？"},
+        )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["data"]["intent"] == "business_read"
+    assert body["data"]["answered"] is True
+    assert "30964320373" in body["data"]["answer"]

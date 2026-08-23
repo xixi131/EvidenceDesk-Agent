@@ -3,9 +3,11 @@
 from evidence_desk.agent.graph import MAX_GRAPH_STEPS, build_agent_graph
 from evidence_desk.agent.state import (
     INTENT_AMBIGUOUS,
+    INTENT_BUSINESS_READ,
     INTENT_KNOWLEDGE,
     INTENT_UNSAFE,
 )
+from evidence_desk.application.ports import WorkflowJob, WorkflowRun
 from evidence_desk.application.rag_answer_service import RagAnswerService
 from evidence_desk.rag.models import RetrievalHit
 
@@ -37,6 +39,31 @@ class FakeLLM:
         return self._reply
 
 
+class FakeGitHubGateway:
+    def __init__(self, run: WorkflowRun) -> None:
+        self._run = run
+
+    def get_workflow_run(self, owner: str, repo: str, run_id: int) -> WorkflowRun:
+        return self._run
+
+    def list_workflow_jobs(
+        self, owner: str, repo: str, run_id: int
+    ) -> list[WorkflowJob]:
+        return []
+
+
+def _run_fact() -> WorkflowRun:
+    return WorkflowRun(
+        run_id=30964320373,
+        name="CI",
+        status="completed",
+        conclusion="failure",
+        head_branch="main",
+        event="push",
+        html_url="https://github.com/github/docs/actions/runs/30964320373",
+    )
+
+
 def _hit(score: float) -> RetrievalHit:
     """造一条相似度为 score 的命中。"""
     return RetrievalHit(
@@ -55,8 +82,9 @@ def _hit(score: float) -> RetrievalHit:
 def _build(hits: list[RetrievalHit], reply: str = "基于官方文档的回答。"):
     """用 Fake 依赖装配一张图。"""
     answer_service = RagAnswerService(FakeLLM(reply), temperature=0.0)
+    gateway = FakeGitHubGateway(_run_fact())
     return build_agent_graph(
-        FakeEmbedder(), FakeRetriever(hits), answer_service, top_k=5
+        FakeEmbedder(), FakeRetriever(hits), answer_service, gateway, top_k=5
     )
 
 
@@ -105,3 +133,14 @@ def test_weak_evidence_retries_once_then_refuses() -> None:
     assert result["intent"] == INTENT_KNOWLEDGE
     assert result["answered"] is False
     assert result["attempts"] == 2  # 触发了"最多 2 次"的终止
+
+
+def test_business_read_calls_github_tool() -> None:
+    # 含 owner/repo + run_id → 走 GitHub 工具，返回运行事实（不走 RAG）
+    graph = _build([_hit(0.9)])
+    result = _run(graph, "github/docs 运行 30964320373 为什么失败？")
+
+    assert result["intent"] == INTENT_BUSINESS_READ
+    assert result["answered"] is True
+    assert "30964320373" in result["answer"]
+    assert result["citations"] == []

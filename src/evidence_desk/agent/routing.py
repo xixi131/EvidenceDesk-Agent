@@ -12,6 +12,7 @@
 
 from evidence_desk.agent.state import (
     INTENT_AMBIGUOUS,
+    INTENT_BUSINESS_READ,
     INTENT_KNOWLEDGE,
     AgentState,
     NodeName,
@@ -27,6 +28,8 @@ def route_after_intent(state: AgentState) -> NodeName:
     intent = state.get("intent")
     if intent == INTENT_KNOWLEDGE:
         return NodeName.RETRIEVE
+    if intent == INTENT_BUSINESS_READ:
+        return NodeName.FETCH_WORKFLOW_RUN
     if intent == INTENT_AMBIGUOUS:
         return NodeName.CLARIFY
     return NodeName.SAFE_REFUSAL  # INTENT_UNSAFE 及任何意外值，都安全兜底
