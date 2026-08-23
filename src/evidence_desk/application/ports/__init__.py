@@ -4,7 +4,19 @@
 由 infrastructure 层或测试提供。应用层只依赖端口，不依赖具体实现。
 """
 
+from evidence_desk.application.ports.github import (
+    GitHubGateway,
+    WorkflowJob,
+    WorkflowRun,
+)
 from evidence_desk.application.ports.llm import LLMClient
 from evidence_desk.application.ports.retrieval import ChunkRetriever, QueryEmbedder
 
-__all__ = ["ChunkRetriever", "LLMClient", "QueryEmbedder"]
+__all__ = [
+    "ChunkRetriever",
+    "GitHubGateway",
+    "LLMClient",
+    "QueryEmbedder",
+    "WorkflowJob",
+    "WorkflowRun",
+]
