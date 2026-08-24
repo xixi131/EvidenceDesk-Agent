@@ -56,6 +56,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         base_url=settings.openai_base_url,
     )
     answer_service = RagAnswerService(llm, temperature=settings.answer_temperature)
+    # ReAct Agent 的「大脑」：支持 function calling 的聊天模型（可配中转站 base_url）。
     chat_model = ChatOpenAI(
         model=settings.answer_model,
         api_key=SecretStr(settings.openai_api_key),
@@ -78,6 +79,8 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             answer_service,
             top_k=settings.retrieval_top_k,
         )
+        # 装配 ReAct Agent 存进 app.state 供各请求复用（复用同一 embedder/retriever/gateway）。
+        # checkpointer=InMemorySaver()：内存版多轮记忆(M-1)；阶段 5 换 PostgresSaver 才落盘持久化。
         app.state.agent = build_react_agent(
             chat_model,
             embedder,

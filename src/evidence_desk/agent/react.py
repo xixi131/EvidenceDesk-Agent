@@ -37,8 +37,17 @@ def build_react_agent(
     top_k: int,
     checkpointer: BaseCheckpointSaver[Any] | None = None,
 ) -> CompiledStateGraph[Any, Any, Any, Any]:
-    """装配并编译一个绑定工具的 ReAct Agent（checkpointer 提供多轮记忆）。"""
+    """装配并编译一个绑定工具的 ReAct Agent（checkpointer 提供多轮记忆）。
+
+    这是 ReAct Agent 的「组装点」。调用链：
+      main.py(组合根) → build_react_agent → create_agent(内部搭好 ReAct 循环)
+    model 作为参数注入：生产传 ChatOpenAI，测试传假聊天模型，所以能离线测。
+    """
+    # ① 把检索 / GitHub 能力包成「工具清单」：每个工具的 docstring+类型 = 发给 LLM 的说明书
     tools = build_agent_tools(embedder, retriever, gateway, top_k=top_k)
+    # ② create_agent 内部搭好 ReAct 循环：
+    #    [调模型] →（模型吐 tool_calls 就执行工具、把结果回喂）→ [再调模型] → … → 无 tool_calls 时收尾
+    #    checkpointer：按 thread_id 存/取会话历史 = 多轮记忆；传 None 则无记忆（单轮）
     return create_agent(
         model, tools, system_prompt=SYSTEM_PROMPT, checkpointer=checkpointer
     )
