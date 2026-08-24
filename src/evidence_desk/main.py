@@ -4,6 +4,7 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from pydantic import SecretStr
 
 from evidence_desk.api.exception_handlers import register_exception_handlers
 from evidence_desk.api.middleware.request_context import request_context_middleware
@@ -30,7 +31,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     避免仅仅「导入本模块」（例如跑测试）就触发加载 torch/weaviate/openai。
     """
 
-    from evidence_desk.agent.graph import build_agent_graph
+    from langchain_openai import ChatOpenAI
+    from langgraph.checkpoint.memory import InMemorySaver
+
+    from evidence_desk.agent.react import build_react_agent
     from evidence_desk.infrastructure.embedding import BgeEmbeddingAdapter
     from evidence_desk.infrastructure.github import GitHubRestClient
     from evidence_desk.infrastructure.llm import OpenAIChatClient
@@ -52,6 +56,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         base_url=settings.openai_base_url,
     )
     answer_service = RagAnswerService(llm, temperature=settings.answer_temperature)
+    chat_model = ChatOpenAI(
+        model=settings.answer_model,
+        api_key=SecretStr(settings.openai_api_key),
+        base_url=settings.openai_base_url,
+        temperature=settings.answer_temperature,
+    )
     gateway = GitHubRestClient(
         base_url=settings.github_api_base_url,
         api_version=settings.github_api_version,
@@ -68,12 +78,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             answer_service,
             top_k=settings.retrieval_top_k,
         )
-        app.state.agent_graph = build_agent_graph(
+        app.state.agent = build_react_agent(
+            chat_model,
             embedder,
             retriever,
-            answer_service,
             gateway,
             top_k=settings.retrieval_top_k,
+            checkpointer=InMemorySaver(),
         )
         yield
     finally:

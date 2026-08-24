@@ -2,6 +2,7 @@ from typing import Any
 
 from langchain.agents import create_agent
 from langchain_core.language_models import BaseChatModel
+from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph.state import CompiledStateGraph
 
 from evidence_desk.agent.tools import build_agent_tools
@@ -34,7 +35,10 @@ def build_react_agent(
     gateway: GitHubGateway,
     *,
     top_k: int,
+    checkpointer: BaseCheckpointSaver[Any] | None = None,
 ) -> CompiledStateGraph[Any, Any, Any, Any]:
-    """装配并编译一个绑定工具的 ReAct Agent。"""
+    """装配并编译一个绑定工具的 ReAct Agent（checkpointer 提供多轮记忆）。"""
     tools = build_agent_tools(embedder, retriever, gateway, top_k=top_k)
-    return create_agent(model, tools, system_prompt=SYSTEM_PROMPT)
+    return create_agent(
+        model, tools, system_prompt=SYSTEM_PROMPT, checkpointer=checkpointer
+    )

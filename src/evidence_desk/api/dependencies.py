@@ -5,7 +5,6 @@ from typing import Annotated, Any, cast
 from fastapi import Depends, Request
 from langgraph.graph.state import CompiledStateGraph
 
-from evidence_desk.agent.state import AgentState
 from evidence_desk.application.chat_service import ChatService
 from evidence_desk.application.readiness import ReadinessService
 
@@ -34,16 +33,16 @@ ChatServiceDependency = Annotated[
 ]
 
 
-def get_agent_graph(request: Request) -> CompiledStateGraph[AgentState, Any, Any, Any]:
-    """从应用状态中取得在启动阶段编译好的 Agent 图。"""
+def get_agent(request: Request) -> CompiledStateGraph[Any, Any, Any, Any]:
+    """从应用状态中取得在启动阶段编译好的 ReAct Agent。"""
 
     return cast(
-        CompiledStateGraph[AgentState, Any, Any, Any],
-        request.app.state.agent_graph,
+        CompiledStateGraph[Any, Any, Any, Any],
+        request.app.state.agent,
     )
 
 
-AgentGraphDependency = Annotated[
-    CompiledStateGraph[AgentState, Any, Any, Any],
-    Depends(get_agent_graph),
+AgentDependency = Annotated[
+    CompiledStateGraph[Any, Any, Any, Any],
+    Depends(get_agent),
 ]

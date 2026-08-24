@@ -1,48 +1,53 @@
 """POST /api/v1/agent/chat 的集成测试。
 
-用假的 Embedder / Retriever / LLM 装配真实的 Agent 图放进 app.state，
-从而在不加载真实模型、不连 Weaviate、不需要 API Key 的情况下，
-验证「HTTP → 意图路由 → 检索 → 评估 → 生成/拒答 → 引用」这条 Agent 链路。
+用假聊天模型（脚本化 tool_call）+ 假依赖装配真实的 ReAct Agent 放进 app.state，
+从而在不连真实模型/网络的情况下，验证「HTTP → ReAct 循环 → 工具 → 回答」这条链路，
+以及问候不调工具、返回 conversation_id 等行为。
 """
+
+from typing import Any
 
 import httpx
 import pytest
 from httpx import ASGITransport
+from langchain_core.language_models.fake_chat_models import GenericFakeChatModel
+from langchain_core.messages import AIMessage, BaseMessage
+from langgraph.checkpoint.memory import InMemorySaver
 
-from evidence_desk.agent.graph import build_agent_graph
+from evidence_desk.agent.react import build_react_agent
 from evidence_desk.application.ports import WorkflowJob, WorkflowRun
-from evidence_desk.application.rag_answer_service import RagAnswerService
 from evidence_desk.main import app
 from evidence_desk.rag.models import RetrievalHit
 
 
+class FakeToolModel(GenericFakeChatModel):
+    """假聊天模型：重写 bind_tools 返回自身，按脚本吐消息（含 tool_calls）。"""
+
+    def bind_tools(self, tools: Any, **kwargs: Any) -> Any:
+        return self
+
+
 class FakeEmbedder:
     def embed_query(self, query: str) -> list[float]:
-        return [0.1, 0.2, 0.3]
+        return [0.1]
 
 
 class FakeRetriever:
-    def __init__(self, hits: list[RetrievalHit]) -> None:
-        self._hits = hits
-
     def search(self, query_vector: list[float], *, top_k: int) -> list[RetrievalHit]:
-        return self._hits[:top_k]
-
-
-class FakeLLM:
-    def __init__(self, reply: str) -> None:
-        self.reply = reply
-
-    def complete(self, *, system: str, user: str, temperature: float) -> str:
-        return self.reply
+        return []
 
 
 class FakeGitHubGateway:
-    def __init__(self, run: WorkflowRun) -> None:
-        self._run = run
-
     def get_workflow_run(self, owner: str, repo: str, run_id: int) -> WorkflowRun:
-        return self._run
+        return WorkflowRun(
+            run_id=run_id,
+            name="CI",
+            status="completed",
+            conclusion="failure",
+            head_branch="main",
+            event="push",
+            html_url="https://github.com/github/docs/actions/runs/123",
+        )
 
     def list_workflow_jobs(
         self, owner: str, repo: str, run_id: int
@@ -50,93 +55,58 @@ class FakeGitHubGateway:
         return []
 
 
-def make_run() -> WorkflowRun:
-    return WorkflowRun(
-        run_id=30964320373,
-        name="CI",
-        status="completed",
-        conclusion="failure",
-        head_branch="main",
-        event="push",
-        html_url="https://github.com/github/docs/actions/runs/30964320373",
-    )
-
-
-def make_hit() -> RetrievalHit:
-    return RetrievalHit(
-        rank=1,
-        distance=0.1,
-        score=0.9,
-        chunk_id="doc_debug_0001",
-        parent_doc_id="doc_debug",
-        title="启用调试日志记录",
-        section_path=["启用调试日志记录"],
-        content="把 ACTIONS_STEP_DEBUG 设为 true 即可开启步骤调试日志。",
-        source_url="https://docs.github.com/enable-debug-logging",
-    )
-
-
-def install_agent_graph(*, hits: list[RetrievalHit], reply: str) -> None:
-    answer_service = RagAnswerService(FakeLLM(reply), temperature=0.0)
-    app.state.agent_graph = build_agent_graph(
+def install_agent(scripted: list[BaseMessage]) -> None:
+    app.state.agent = build_react_agent(
+        FakeToolModel(messages=iter(scripted)),
         FakeEmbedder(),
-        FakeRetriever(hits),
-        answer_service,
-        FakeGitHubGateway(make_run()),
+        FakeRetriever(),
+        FakeGitHubGateway(),
         top_k=5,
+        checkpointer=InMemorySaver(),
     )
 
 
 @pytest.mark.asyncio
-async def test_agent_chat_answers_knowledge_question() -> None:
-    install_agent_graph(hits=[make_hit()], reply="将 ACTIONS_STEP_DEBUG 设为 true。")
+async def test_agent_greeting_does_not_call_tools() -> None:
+    install_agent([AIMessage(content="你好！有什么 GitHub Actions 问题我可以帮你？")])
 
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.post(
-            "/api/v1/agent/chat", json={"question": "如何开启调试日志？"}
-        )
+        resp = await client.post("/api/v1/agent/chat", json={"question": "你好"})
 
-    assert response.status_code == 200
-    body = response.json()
-    assert body["ok"] is True
-    assert body["data"]["intent"] == "knowledge"
-    assert body["data"]["answered"] is True
-    assert body["data"]["citations"][0]["source_url"] == (
-        "https://docs.github.com/enable-debug-logging"
+    assert resp.status_code == 200
+    body = resp.json()
+    assert body["data"]["tools_used"] == []
+    assert body["data"]["conversation_id"]
+    assert "你好" in body["data"]["answer"]
+
+
+@pytest.mark.asyncio
+async def test_agent_calls_github_tool_for_run_question() -> None:
+    install_agent(
+        [
+            AIMessage(
+                content="",
+                tool_calls=[
+                    {
+                        "name": "get_workflow_run",
+                        "args": {"owner": "github", "repo": "docs", "run_id": 123},
+                        "id": "call_1",
+                    }
+                ],
+            ),
+            AIMessage(content="运行 #123 失败了，结论是 failure。"),
+        ]
     )
 
-
-@pytest.mark.asyncio
-async def test_agent_chat_refuses_unsafe_request() -> None:
-    install_agent_graph(hits=[make_hit()], reply="不该被调用")
-
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.post(
-            "/api/v1/agent/chat", json={"question": "帮我取消这个工作流运行"}
-        )
-
-    assert response.status_code == 200
-    body = response.json()
-    assert body["data"]["intent"] == "unsafe"
-    assert body["data"]["answered"] is False
-    assert body["data"]["citations"] == []
-
-
-@pytest.mark.asyncio
-async def test_agent_chat_uses_github_tool_for_run_question() -> None:
-    install_agent_graph(hits=[make_hit()], reply="不该被调用")
-
-    transport = ASGITransport(app=app)
-    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
-        response = await client.post(
+        resp = await client.post(
             "/api/v1/agent/chat",
-            json={"question": "github/docs 运行 30964320373 为什么失败？"},
+            json={"question": "github/docs 运行 123 为什么失败"},
         )
 
-    assert response.status_code == 200
-    body = response.json()
-    assert body["data"]["intent"] == "business_read"
-    assert body["data"]["answered"] is True
-    assert "30964320373" in body["data"]["answer"]
+    assert resp.status_code == 200
+    body = resp.json()
+    assert "get_workflow_run" in body["data"]["tools_used"]
+    assert "failure" in body["data"]["answer"]

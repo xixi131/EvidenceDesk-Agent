@@ -28,10 +28,18 @@ class ChatResponseData(APIModel):
     citations: list[CitationView]
 
 
+class AgentChatRequest(APIModel):
+    """ReAct Agent 问答请求体（可带多轮对话 id）。"""
+
+    question: str = Field(min_length=1, max_length=2000, description="用户问题")
+    conversation_id: str | None = Field(
+        default=None, description="多轮对话 id（thread_id）；不传则新建一段会话"
+    )
+
+
 class AgentChatResponseData(APIModel):
-    """Agent 一次问答返回的数据（比无 Agent 版多一个 intent，暴露路由决策）。"""
+    """ReAct Agent 一次问答返回的数据。"""
 
     answer: str
-    answered: bool
-    intent: str
-    citations: list[CitationView]
+    conversation_id: str
+    tools_used: list[str]

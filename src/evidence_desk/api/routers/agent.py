@@ -1,17 +1,13 @@
-"""基于 LangGraph Agent 的问答路由。"""
+"""基于 LangGraph ReAct Agent 的问答路由。"""
 
-from typing import cast
+import uuid
+from typing import Any, cast
 
 from fastapi import APIRouter, Request
+from langchain_core.messages import AIMessage
 
-from evidence_desk.agent.graph import MAX_GRAPH_STEPS
-from evidence_desk.agent.state import AgentState
-from evidence_desk.api.dependencies import AgentGraphDependency
-from evidence_desk.api.schemas.chat import (
-    AgentChatResponseData,
-    ChatRequest,
-    CitationView,
-)
+from evidence_desk.api.dependencies import AgentDependency
+from evidence_desk.api.schemas.chat import AgentChatRequest, AgentChatResponseData
 from evidence_desk.api.schemas.common import ResponseMeta, SuccessResponse
 
 router = APIRouter(tags=["agent"])
@@ -20,38 +16,37 @@ router = APIRouter(tags=["agent"])
 @router.post(
     "/api/v1/agent/chat",
     response_model=SuccessResponse[AgentChatResponseData],
-    summary="基于 LangGraph Agent 的证据约束问答",
+    summary="基于 LangGraph ReAct Agent 的多轮问答",
 )
 def agent_chat(
     request: Request,
-    payload: ChatRequest,
-    graph: AgentGraphDependency,
+    payload: AgentChatRequest,
+    agent: AgentDependency,
 ) -> SuccessResponse[AgentChatResponseData]:
-    """经意图路由 → 检索 → 评估 →（必要时改写重试）→ 生成的 Agent 问答。"""
+    """由 LLM 自主决定调用 search_docs / GitHub 工具，支持多轮对话记忆。"""
 
-    # 只 cast 一次成 AgentState（TypedDict 自带各字段类型），后面取值就无需再 cast。
-    final_state = cast(
-        AgentState,
-        graph.invoke(
-            {"question": payload.question},
-            {"recursion_limit": MAX_GRAPH_STEPS},
+    conversation_id = payload.conversation_id or f"conv_{uuid.uuid4().hex}"
+    # 同一 conversation_id 作为 thread_id，checkpointer 自动带上该会话的历史消息。
+    result = cast(
+        dict[str, Any],
+        agent.invoke(
+            {"messages": [{"role": "user", "content": payload.question}]},
+            {"configurable": {"thread_id": conversation_id}},
         ),
     )
 
-    citations = final_state.get("citations", [])
+    messages = result["messages"]
+    answer = str(messages[-1].content) if messages else ""
+    tools_used = [
+        tool_call["name"]
+        for message in messages
+        if isinstance(message, AIMessage)
+        for tool_call in message.tool_calls
+    ]
     data = AgentChatResponseData(
-        answer=final_state.get("answer", ""),
-        answered=final_state.get("answered", False),
-        intent=final_state.get("intent", ""),
-        citations=[
-            CitationView(
-                index=citation.index,
-                title=citation.title,
-                section_path=citation.section_path,
-                source_url=citation.source_url,
-            )
-            for citation in citations
-        ],
+        answer=answer,
+        conversation_id=conversation_id,
+        tools_used=tools_used,
     )
     return SuccessResponse(
         data=data,
