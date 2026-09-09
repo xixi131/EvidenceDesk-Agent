@@ -32,12 +32,21 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     """
 
     from langchain_openai import ChatOpenAI
-    from langgraph.checkpoint.memory import InMemorySaver
+    from langgraph.checkpoint.postgres import PostgresSaver
+    from langgraph.store.memory import InMemoryStore
+    from psycopg import Connection
+    from psycopg.rows import DictRow, dict_row
+    from psycopg_pool import ConnectionPool
 
     from evidence_desk.agent.react import build_react_agent
+    from evidence_desk.application.ticket_service import TicketService
     from evidence_desk.infrastructure.embedding import BgeEmbeddingAdapter
     from evidence_desk.infrastructure.github import GitHubRestClient
     from evidence_desk.infrastructure.llm import OpenAIChatClient
+    from evidence_desk.infrastructure.postgres.schema import ensure_ticket_table
+    from evidence_desk.infrastructure.postgres.ticket_repository import (
+        PostgresTicketRepository,
+    )
     from evidence_desk.infrastructure.weaviate import (
         WeaviateDenseRetriever,
         connect_to_weaviate,
@@ -69,6 +78,42 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         token=settings.github_token,
     )
 
+    # 阶段 5：短期记忆持久化。PostgresSaver 要求连接返回字典格式的行（dict_row），
+    # 但这只是运行时传给 kwargs 的参数，mypy 静态检查阶段看不出来，所以显式标注
+    # ConnectionPool[Connection[DictRow]]，把「这个连接池里的连接是字典格式」这件事
+    # 在类型层面也声明清楚，跟 PostgresSaver 要求的类型对上。
+    checkpoint_pool: ConnectionPool[Connection[DictRow]] = ConnectionPool(
+        conninfo=settings.database_url,
+        max_size=20,
+        kwargs={"autocommit": True, "row_factory": dict_row, "prepare_threshold": 0},
+    )
+    checkpointer = PostgresSaver(checkpoint_pool)
+    # setup()：第一次用之前必须手动调用，跟 ensure_ticket_table 是同一件事——
+    # 在 Postgres 里建好它自己需要的表（checkpoints、checkpoint_writes 等）。
+    # 内部逻辑「没有就建、有就跳过」，每次启动都调用没问题，天然幂等。
+    checkpointer.setup()
+
+    # M-3 长期用户画像记忆：InMemoryStore 是 LangGraph 提供的「跨会话」键值/语义
+    # 检索存储（跟 InMemorySaver 是同一族东西，一个管跨会话记忆，一个管单会话历史；
+    # 都是内存版，阶段 5 会一起换成 Postgres 落盘）。
+    # index 配置让它支持 recall_user_memory 里的语义检索（store.search(query=...)）：
+    #   dims  = 向量维度，直接用真实 embedder 探测一次，不写死数字，换模型也不用改配置；
+    #   embed = 一个「文本列表 -> 向量列表」的函数，这里包一层薄适配器，
+    #           复用已有的 embedder.embed_query（跟 RAG 检索用的是同一个模型/同一份权重）。
+    memory_dims = len(embedder.embed_query("_dims_probe"))
+    memory_store = InMemoryStore(
+        index={
+            "dims": memory_dims,
+            "embed": lambda texts: [embedder.embed_query(t) for t in texts],
+        }
+    )
+
+    # P4-04/05：工单表 + 仓储。ensure_ticket_table 是「没有就建」，可以每次启动
+    # 都调用，天然幂等。PostgresTicketRepository 不常驻连接（见该文件内的注释），
+    # 所以这里不需要 client/gateway 那种「finally 里关闭」的收尾。
+    ensure_ticket_table(settings.database_url)
+    ticket_service = TicketService(PostgresTicketRepository(settings.database_url))
+
     client = connect_to_weaviate(settings)
     try:
         collection = ensure_knowledge_chunk_collection(client)
@@ -80,19 +125,33 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             top_k=settings.retrieval_top_k,
         )
         # 装配 ReAct Agent 存进 app.state 供各请求复用（复用同一 embedder/retriever/gateway）。
-        # checkpointer=InMemorySaver()：内存版多轮记忆(M-1)；阶段 5 换 PostgresSaver 才落盘持久化。
+        # checkpointer=PostgresSaver（阶段 5）：短期多轮记忆(M-1/M-2)落盘持久化，
+        # 服务重启后能从 Postgres 里恢复历史对话，不再是进程内存里的字典。
+        # summary_trigger_tokens/summary_keep_messages：M-2 上下文超限策略——
+        # 会话（近似）token 数超过阈值时，自动把旧消息摘要压缩，只留最近 N 条原始消息。
+        # store/memory_top_k：M-3 长期用户画像记忆——挂上 store 后，Agent 会多出
+        # save_user_memory/recall_user_memory 两个工具（见 tools.py），由模型自主
+        # 判断何时记、何时查。
+        # ticket_service：P4-05 写工具——挂上后 Agent 会多出 create_support_ticket，
+        # 由模型在拿到用户明确同意后调用，创建/复用支持工单。
         app.state.agent = build_react_agent(
             chat_model,
             embedder,
             retriever,
             gateway,
             top_k=settings.retrieval_top_k,
-            checkpointer=InMemorySaver(),
+            checkpointer=checkpointer,
+            summary_trigger_tokens=settings.context_summary_trigger_tokens,
+            summary_keep_messages=settings.context_keep_messages,
+            store=memory_store,
+            memory_top_k=settings.long_term_memory_top_k,
+            ticket_service=ticket_service,
         )
         yield
     finally:
         gateway.close()
         client.close()
+        checkpoint_pool.close()
 
 
 app = FastAPI(

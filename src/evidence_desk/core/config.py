@@ -44,6 +44,16 @@ class Settings(BaseSettings):
     answer_model: str = "gpt-4o-mini"
     answer_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
 
+    # M-2 上下文超限策略：会话消息（近似）token 数达到这个阈值时，
+    # ReAct Agent 会在下一次调模型前先把较早的消息摘要压缩，只保留最近
+    # context_keep_messages 条原始消息 + 一段摘要文本，防止长对话把上下文塞爆。
+    context_summary_trigger_tokens: int = Field(default=3000, ge=1)
+    context_keep_messages: int = Field(default=6, ge=1)
+
+    # M-3 长期用户画像记忆：recall_user_memory 工具一次最多检索几条相关的历史记忆
+    # 返回给模型看，跟 retrieval_top_k 是同一个模式（都是「一次检索返回几条」）。
+    long_term_memory_top_k: int = Field(default=5, ge=1, le=20)
+
 
 @lru_cache
 def get_settings() -> Settings:
