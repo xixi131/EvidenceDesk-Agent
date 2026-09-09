@@ -33,7 +33,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
     from langchain_openai import ChatOpenAI
     from langgraph.checkpoint.postgres import PostgresSaver
-    from langgraph.store.memory import InMemoryStore
+    from langgraph.store.postgres import PostgresStore
     from psycopg import Connection
     from psycopg.rows import DictRow, dict_row
     from psycopg_pool import ConnectionPool
@@ -86,6 +86,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         conninfo=settings.database_url,
         max_size=20,
         kwargs={"autocommit": True, "row_factory": dict_row, "prepare_threshold": 0},
+        open=True,
     )
     checkpointer = PostgresSaver(checkpoint_pool)
     # setup()：第一次用之前必须手动调用，跟 ensure_ticket_table 是同一件事——
@@ -93,20 +94,28 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     # 内部逻辑「没有就建、有就跳过」，每次启动都调用没问题，天然幂等。
     checkpointer.setup()
 
-    # M-3 长期用户画像记忆：InMemoryStore 是 LangGraph 提供的「跨会话」键值/语义
-    # 检索存储（跟 InMemorySaver 是同一族东西，一个管跨会话记忆，一个管单会话历史；
-    # 都是内存版，阶段 5 会一起换成 Postgres 落盘）。
-    # index 配置让它支持 recall_user_memory 里的语义检索（store.search(query=...)）：
+    # 阶段 5：长期记忆持久化。PostgresStore 跟上面的 PostgresSaver 是同一族——
+    # 一个管跨会话的长期记忆（M-3），一个管单会话内的历史（M-1/M-2）。两者共用
+    # 同一个 checkpoint_pool：它们只是各自向池子借连接去执行自己的 SQL，互不
+    # 干扰，没必要为长期记忆再单独开一个连接池。
+    # index 配置语义跟之前的 InMemoryStore 完全一样（这就是「端口」抽象的好处：
+    # 换成 Postgres 实现，调用方看到的配置接口没变）：
     #   dims  = 向量维度，直接用真实 embedder 探测一次，不写死数字，换模型也不用改配置；
     #   embed = 一个「文本列表 -> 向量列表」的函数，这里包一层薄适配器，
     #           复用已有的 embedder.embed_query（跟 RAG 检索用的是同一个模型/同一份权重）。
+    # PostgresStore 做语义检索靠 pgvector 扩展存向量，compose.yml 里的 Postgres
+    # 镜像已经换成 pgvector/pgvector:pg17（普通 postgres 镜像没有这个扩展）。
     memory_dims = len(embedder.embed_query("_dims_probe"))
-    memory_store = InMemoryStore(
+    memory_store = PostgresStore(
+        checkpoint_pool,
         index={
             "dims": memory_dims,
             "embed": lambda texts: [embedder.embed_query(t) for t in texts],
-        }
+        },
     )
+    # 跟 checkpointer.setup() 同理：第一次用之前必须手动调用，建好它自己需要的
+    # 表（store、store_vectors 等）和 pgvector 索引，内部「没有就建、有就跳过」。
+    memory_store.setup()
 
     # P4-04/05：工单表 + 仓储。ensure_ticket_table 是「没有就建」，可以每次启动
     # 都调用，天然幂等。PostgresTicketRepository 不常驻连接（见该文件内的注释），

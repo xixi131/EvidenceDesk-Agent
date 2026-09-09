@@ -2,7 +2,9 @@ name: evidence-desk-agent
 
 services:
   postgres:
-    image: postgres:17.10-alpine3.23
+    # 换成带 pgvector 扩展的镜像（阶段 5 长期记忆持久化 PostgresStore 需要它做
+    # 语义检索）。同样是 Postgres 17，数据目录格式兼容，换镜像不会丢现有数据。
+    image: pgvector/pgvector:pg17
     container_name: evidence-desk-postgres
     restart: unless-stopped
     environment:
