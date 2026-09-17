@@ -1,0 +1,88 @@
+{
+  "k": 5,
+  "candidate_top_n": 20,
+  "reranker_model": "BAAI/bge-reranker-v2-m3",
+  "hybrid_alpha": 0.5,
+  "methods": {
+    "Dense": {
+      "num_cases": 51,
+      "recall@5": 0.9314,
+      "precision@5": 0.2157,
+      "mrr": 0.8693,
+      "ms_per_query": 12.7,
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 0.9211,
+        "multi_document": 0.8333,
+        "rerun": 1.0,
+        "runner": 0.75,
+        "secret": 1.0,
+        "security": 1.0,
+        "semantic_paraphrase": 0.9118
+      }
+    },
+    "Hybrid": {
+      "num_cases": 51,
+      "recall@5": 0.9608,
+      "precision@5": 0.2196,
+      "mrr": 0.901,
+      "ms_per_query": 13.1,
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 0.9737,
+        "multi_document": 0.7778,
+        "rerun": 1.0,
+        "runner": 1.0,
+        "secret": 1.0,
+        "security": 1.0,
+        "semantic_paraphrase": 0.9412
+      }
+    },
+    "Dense+Rerank": {
+      "num_cases": 51,
+      "recall@5": 1.0,
+      "precision@5": 0.2353,
+      "mrr": 0.8333,
+      "ms_per_query": 1389.6,
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 1.0,
+        "multi_document": 1.0,
+        "rerun": 1.0,
+        "runner": 1.0,
+        "secret": 1.0,
+        "security": 1.0,
+        "semantic_paraphrase": 1.0
+      }
+    },
+    "Hybrid+Rerank": {
+      "num_cases": 51,
+      "recall@5": 0.9804,
+      "precision@5": 0.2275,
+      "mrr": 0.8118,
+      "ms_per_query": 1899.1,
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 1.0,
+        "multi_document": 0.8889,
+        "rerun": 1.0,
+        "runner": 0.875,
+        "secret": 1.0,
+        "security": 0.9375,
+        "semantic_paraphrase": 1.0
+      }
+    }
+  }
+}
