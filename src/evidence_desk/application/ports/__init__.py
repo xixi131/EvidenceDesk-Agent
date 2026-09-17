@@ -10,7 +10,11 @@ from evidence_desk.application.ports.github import (
     WorkflowRun,
 )
 from evidence_desk.application.ports.llm import LLMClient
-from evidence_desk.application.ports.retrieval import ChunkRetriever, QueryEmbedder
+from evidence_desk.application.ports.retrieval import (
+    ChunkRetriever,
+    QueryEmbedder,
+    Reranker,
+)
 from evidence_desk.application.ports.ticket import Ticket, TicketRepository
 
 __all__ = [
@@ -18,6 +22,7 @@ __all__ = [
     "GitHubGateway",
     "LLMClient",
     "QueryEmbedder",
+    "Reranker",
     "Ticket",
     "TicketRepository",
     "WorkflowJob",

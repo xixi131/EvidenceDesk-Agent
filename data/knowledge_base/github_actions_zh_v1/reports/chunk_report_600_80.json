@@ -4,7 +4,7 @@
   "baseline_version": "github-actions-zh-baseline-v1",
   "cleaning_rules_version": "github-actions-cleaning-v1",
   "chunk_config_version": "structure-then-recursive-600-80-v1",
-  "generated_at": "2026-09-17T06:05:05.740176Z",
+  "generated_at": "2026-09-17T08:27:14.498777Z",
   "document_count": 29,
   "chunk_count": 293,
   "chunk_size": 600,

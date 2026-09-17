@@ -36,6 +36,13 @@ class Settings(BaseSettings):
     embedding_cache_dir: Path = Path(".cache/huggingface")
     retrieval_top_k: int = Field(default=5, ge=1, le=50)
 
+    # P6-05 重排：两段式检索里"粗筛捞多少条候选"。
+    # 定成 20 是因为 Dense 的 Recall@20 = 1.0000（见 retrieval_eval_v1.md），
+    # 也就是 20 条候选里必定含正确答案——粗筛不漏，重排才有意义。
+    # 调小会开始漏答案，调大只是让重排白跑更多条、变慢。
+    rerank_candidate_top_n: int = Field(default=20, ge=1, le=100)
+    reranker_model: str = "BAAI/bge-reranker-v2-m3"
+
     # 回答生成（阶段 1C 证据约束回答）。
     # API Key 只从环境/.env 读取，绝不写进代码或提交进仓库。
     openai_api_key: str | None = None
