@@ -19,8 +19,14 @@ class WeaviateDenseRetriever:
         query_vector: list[float],
         *,
         top_k: int,
+        query_text: str | None = None,
     ) -> list[RetrievalHit]:
-        """使用 Weaviate 的向量索引搜索最相近的 Chunk。"""
+        """使用 Weaviate 的向量索引搜索最相近的 Chunk。
+
+        query_text 未使用：Dense 检索只看向量，这个参数是 ChunkRetriever
+        端口为 BM25/Hybrid 检索器新增的（见 retrieval.py），Dense 实现按
+        端口签名接住即可，不需要用它。
+        """
 
         if top_k < 1:
             raise ValueError("top_k 必须大于等于1。")

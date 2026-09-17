@@ -27,6 +27,7 @@ class CaseResult:
     recall: dict[int, float]
     precision: dict[int, float]
     reciprocal_rank: float
+    tags: list[str]
 
 
 @dataclass(frozen=True)
@@ -60,7 +61,9 @@ def evaluate_retrieval(
     results: list[CaseResult] = []
     for case in answerable:
         vector = embedder.embed_query(case.question)
-        hits = retriever.search(vector, top_k=max_k)
+        # query_text=case.question：P6-03 新增，Dense 检索器会忽略它，
+        # BM25/Hybrid 检索器需要原始问题文本做关键词匹配（见 ChunkRetriever 端口）。
+        hits = retriever.search(vector, top_k=max_k, query_text=case.question)
         ranked = [hit.parent_doc_id for hit in hits]  # 保留重复，供 MRR 用 chunk 排名
         relevant = set(case.relevant_doc_ids)
         results.append(
@@ -72,6 +75,7 @@ def evaluate_retrieval(
                 recall={k: recall_at_k(ranked, relevant, k) for k in ks},
                 precision={k: precision_at_k(ranked, relevant, k) for k in ks},
                 reciprocal_rank=reciprocal_rank(ranked, relevant),
+                tags=case.tags,
             )
         )
 

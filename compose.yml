@@ -37,6 +37,8 @@ services:
       PERSISTENCE_DATA_PATH: /var/lib/weaviate
       DEFAULT_VECTORIZER_MODULE: none
       CLUSTER_HOSTNAME: evidence-desk-node1
+      # P6-03：BM25/Hybrid 检索要用中文分词器，核心自带但默认关闭，得显式开启。
+      ENABLE_TOKENIZER_GSE_CH: "true"
     healthcheck:
       test:
         [

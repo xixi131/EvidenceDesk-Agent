@@ -1,0 +1,63 @@
+{
+  "k": 5,
+  "hybrid_alpha": 0.5,
+  "methods": {
+    "Dense": {
+      "num_cases": 51,
+      "recall@5": 0.9314,
+      "precision@5": 0.2157,
+      "mrr": 0.8693,
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 0.9211,
+        "multi_document": 0.8333,
+        "rerun": 1.0,
+        "runner": 0.75,
+        "secret": 1.0,
+        "security": 1.0,
+        "semantic_paraphrase": 0.9118
+      }
+    },
+    "BM25": {
+      "num_cases": 51,
+      "recall@5": 0.1176,
+      "precision@5": 0.0314,
+      "mrr": 0.1225,
+      "tag_recall@5": {
+        "artifact": 0.0,
+        "cache": 0.0,
+        "concept": 0.0,
+        "debug": 1.0,
+        "exact_identifier": 0.2105,
+        "multi_document": 0.2222,
+        "rerun": 0.0,
+        "runner": 0.125,
+        "secret": 0.0,
+        "security": 0.25,
+        "semantic_paraphrase": 0.0882
+      }
+    },
+    "Hybrid": {
+      "num_cases": 51,
+      "recall@5": 0.8627,
+      "precision@5": 0.2,
+      "mrr": 0.7229,
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 0.6667,
+        "debug": 1.0,
+        "exact_identifier": 0.9737,
+        "multi_document": 0.7778,
+        "rerun": 1.0,
+        "runner": 0.75,
+        "secret": 1.0,
+        "security": 1.0,
+        "semantic_paraphrase": 0.7353
+      }
+    }
+  }
+}

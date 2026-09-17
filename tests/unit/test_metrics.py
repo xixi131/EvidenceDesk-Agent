@@ -3,6 +3,7 @@
 import pytest
 
 from evidence_desk.evaluation.metrics import (
+    group_recall_by_tag,
     precision_at_k,
     recall_at_k,
     reciprocal_rank,
@@ -49,3 +50,26 @@ def test_recall_requires_relevant() -> None:
 def test_precision_rejects_non_positive_k() -> None:
     with pytest.raises(ValueError):
         precision_at_k(RANKED, {"doc_a"}, 0)
+
+
+def test_group_recall_by_tag_averages_within_each_tag() -> None:
+    tagged = [
+        (["knowledge"], 1.0),
+        (["knowledge"], 0.5),
+        (["security"], 0.0),
+    ]
+    result = group_recall_by_tag(tagged)
+    assert result == pytest.approx({"knowledge": 0.75, "security": 0.0})
+
+
+def test_group_recall_by_tag_counts_multi_tag_case_in_every_tag() -> None:
+    tagged = [
+        (["multi_document", "security"], 1.0),
+        (["security"], 0.0),
+    ]
+    result = group_recall_by_tag(tagged)
+    assert result == pytest.approx({"multi_document": 1.0, "security": 0.5})
+
+
+def test_group_recall_by_tag_empty_input_returns_empty_dict() -> None:
+    assert group_recall_by_tag([]) == {}
