@@ -17,15 +17,22 @@ def ensure_knowledge_chunk_collection(
     client: weaviate.WeaviateClient,
     *,
     recreate: bool = False,
+    collection_name: str = KNOWLEDGE_CHUNK_COLLECTION,
 ) -> weaviate.collections.Collection:
-    """创建自带向量的 KnowledgeChunk Collection。"""
+    """创建自带向量的 KnowledgeChunk Collection。
 
-    if recreate and client.collections.exists(KNOWLEDGE_CHUNK_COLLECTION):
-        client.collections.delete(KNOWLEDGE_CHUNK_COLLECTION)
+    collection_name（P6-04 新增）：默认是生产用的那个集合，已有调用方不用改。
+    对比实验要建平行集合——不同文档集、不同 Embedding 模型必须分开存，因为
+    向量维度都不一样（bge-small-zh 是 512 维，bge-m3 是 1024 维），塞进同一个
+    集合直接报错。
+    """
 
-    if not client.collections.exists(KNOWLEDGE_CHUNK_COLLECTION):
+    if recreate and client.collections.exists(collection_name):
+        client.collections.delete(collection_name)
+
+    if not client.collections.exists(collection_name):
         client.collections.create(
-            name=KNOWLEDGE_CHUNK_COLLECTION,
+            name=collection_name,
             vector_config=Configure.Vectors.self_provided(),
             properties=[
                 Property(
@@ -107,4 +114,4 @@ def ensure_knowledge_chunk_collection(
             ],
         )
 
-    return client.collections.get(KNOWLEDGE_CHUNK_COLLECTION)
+    return client.collections.get(collection_name)

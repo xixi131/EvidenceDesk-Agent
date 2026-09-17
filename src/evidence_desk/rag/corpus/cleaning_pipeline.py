@@ -10,6 +10,8 @@ from evidence_desk.rag.corpus.cleaner import (
     clean_documents,
 )
 from evidence_desk.rag.corpus.manifest import (
+    FROZEN_ZH_BASELINE,
+    BaselineSpec,
     load_and_validate_manifests,
 )
 from evidence_desk.rag.corpus.markdown_loader import (
@@ -31,10 +33,17 @@ class CleaningPipelineError(ValueError):
 
 def generate_cleaned_corpus(
     corpus_root: Path,
+    *,
+    spec: BaselineSpec = FROZEN_ZH_BASELINE,
 ) -> CleaningReport:
-    """读取、清洗并保存第一次中文 Baseline 的29篇文档。"""
+    """读取、清洗并保存 Baseline 纳入的文档。
 
-    manifests = load_and_validate_manifests(corpus_root)
+    spec 默认是阶段 1 冻结的 29 篇中文 Baseline；P6-04 的 33 篇对照组传
+    MULTILINGUAL_BASELINE。注意这个函数会 rmtree 掉 cleaned/ 再重建，
+    所以不同 Baseline 必须用各自独立的 corpus_root，不能共用一个目录。
+    """
+
+    manifests = load_and_validate_manifests(corpus_root, spec=spec)
 
     parsed_documents = load_markdown_documents(
         corpus_root=corpus_root,

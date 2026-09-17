@@ -1,0 +1,80 @@
+{
+  "k": 5,
+  "experiments": {
+    "A: 29篇 + bge-small-zh": {
+      "chunk_count": 293,
+      "vector_dim": 512,
+      "recall@5": 0.9314,
+      "precision@5": 0.2157,
+      "mrr": 0.8693,
+      "model_load_seconds": 11.0,
+      "embed_seconds": 1.9,
+      "write_seconds": 1.4,
+      "ms_per_query": 20.7,
+      "peak_rss_mb": 725.0,
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 0.9211,
+        "multi_document": 0.8333,
+        "rerun": 1.0,
+        "runner": 0.75,
+        "secret": 1.0,
+        "security": 1.0,
+        "semantic_paraphrase": 0.9118
+      }
+    },
+    "B: 33篇 + bge-small-zh": {
+      "chunk_count": 1191,
+      "vector_dim": 512,
+      "recall@5": 0.8725,
+      "precision@5": 0.2,
+      "mrr": 0.7948,
+      "model_load_seconds": 9.1,
+      "embed_seconds": 3.4,
+      "write_seconds": 1.4,
+      "ms_per_query": 9.3,
+      "peak_rss_mb": 869.3,
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 0.8158,
+        "multi_document": 0.7222,
+        "rerun": 1.0,
+        "runner": 0.5,
+        "secret": 1.0,
+        "security": 1.0,
+        "semantic_paraphrase": 0.9118
+      }
+    },
+    "C: 33篇 + bge-m3": {
+      "chunk_count": 1191,
+      "vector_dim": 1024,
+      "recall@5": 0.8725,
+      "precision@5": 0.2039,
+      "mrr": 0.7059,
+      "model_load_seconds": 12.4,
+      "embed_seconds": 44.2,
+      "write_seconds": 1.5,
+      "ms_per_query": 48.1,
+      "peak_rss_mb": 1351.3,
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 0.8158,
+        "multi_document": 0.8333,
+        "rerun": 1.0,
+        "runner": 1.0,
+        "secret": 1.0,
+        "security": 0.9375,
+        "semantic_paraphrase": 0.8824
+      }
+    }
+  }
+}

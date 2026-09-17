@@ -26,6 +26,52 @@ class ManifestValidationError(ValueError):
 
 
 @dataclass(frozen=True, slots=True)
+class BaselineSpec:
+    """一条 Baseline 的冻结契约：版本号和文档数必须精确等于这些值。
+
+    原来这几个值是模块级常量、写死在校验逻辑里。P6-04 要做「29篇 vs 33篇」
+    的对比实验，需要第二条平行 Baseline，于是把它们收进这个对象，让校验函数
+    按传进来的 spec 去比对。
+
+    注意这不是"把校验放松了"——每条 Baseline 仍然被同样严格地钉死，只是从
+    "全局只能有一条"变成"可以有多条，各自钉各自的"。冻结机制是这个项目
+    可复现性的地基，P6-04 不能为了做实验就把它拆掉。
+    """
+
+    dataset_version: str
+    baseline_version: str
+    cleaning_rules_version: str
+    source_count: int
+    included_count: int
+    excluded_count: int
+
+
+# 阶段 1 冻结的中文 Baseline：33 篇里纳入 29 篇，排除 4 篇英文为主的参考文档。
+# 这是默认值，所有已有调用方的行为完全不变。
+FROZEN_ZH_BASELINE = BaselineSpec(
+    dataset_version=EXPECTED_DATASET_VERSION,
+    baseline_version=EXPECTED_BASELINE_VERSION,
+    cleaning_rules_version=EXPECTED_CLEANING_RULES_VERSION,
+    source_count=EXPECTED_SOURCE_COUNT,
+    included_count=EXPECTED_INCLUDED_COUNT,
+    excluded_count=EXPECTED_EXCLUDED_COUNT,
+)
+
+# P6-04 的对照 Baseline：同一份下载快照，但 33 篇全部纳入，一篇不排除。
+# 用来复核阶段 1 那个"英文为主的参考文档先排除掉"的决定——当时用的是中文
+# Embedding 模型，换成多语言模型后这 4 篇到底是净收益还是干扰，是个实验问题。
+MULTILINGUAL_BASELINE_VERSION = "github-actions-multilingual-reference-v1"
+MULTILINGUAL_BASELINE = BaselineSpec(
+    dataset_version=EXPECTED_DATASET_VERSION,
+    baseline_version=MULTILINGUAL_BASELINE_VERSION,
+    cleaning_rules_version=EXPECTED_CLEANING_RULES_VERSION,
+    source_count=EXPECTED_SOURCE_COUNT,
+    included_count=EXPECTED_SOURCE_COUNT,
+    excluded_count=0,
+)
+
+
+@dataclass(frozen=True, slots=True)
 class ManifestReadResult:
     """校验通过后交给后续 Loader 使用的 Manifest 结果。"""
 
@@ -77,16 +123,24 @@ def read_baseline_manifest(path: Path) -> BaselineManifest:
         raise ManifestValidationError("Baseline Manifest 数据结构校验失败") from error
 
 
-def load_and_validate_manifests(corpus_root: Path) -> ManifestReadResult:
-    """读取两个 Manifest，校验冻结规则，并返回29篇 Baseline 文档。"""
+def load_and_validate_manifests(
+    corpus_root: Path,
+    *,
+    spec: BaselineSpec = FROZEN_ZH_BASELINE,
+) -> ManifestReadResult:
+    """读取两个 Manifest，按 spec 校验冻结规则，返回纳入的 Baseline 文档。
+
+    spec 默认是阶段 1 冻结的中文 Baseline（29篇），所以已有调用方不用改。
+    P6-04 的 33 篇对照组传 MULTILINGUAL_BASELINE。
+    """
 
     source_manifest = read_source_manifest(corpus_root / "manifest.json")
     baseline_manifest = read_baseline_manifest(corpus_root / "baseline_manifest.json")
 
-    _validate_versions(source_manifest, baseline_manifest)
-    _validate_source_counts(source_manifest)
+    _validate_versions(source_manifest, baseline_manifest, spec)
+    _validate_source_counts(source_manifest, spec)
     included_documents, excluded_documents = _validate_baseline_counts(
-        baseline_manifest
+        baseline_manifest, spec
     )
     source_documents_by_id = _validate_unique_source_ids(source_manifest)
     baseline_documents_by_id = _validate_unique_baseline_ids(baseline_manifest)
@@ -106,14 +160,15 @@ def load_and_validate_manifests(corpus_root: Path) -> ManifestReadResult:
 def _validate_versions(
     source_manifest: SourceManifest,
     baseline_manifest: BaselineManifest,
+    spec: BaselineSpec,
 ) -> None:
-    if source_manifest.dataset_version != EXPECTED_DATASET_VERSION:
+    if source_manifest.dataset_version != spec.dataset_version:
         raise ManifestValidationError("Source Dataset 版本与冻结版本不一致")
-    if baseline_manifest.baseline_version != EXPECTED_BASELINE_VERSION:
+    if baseline_manifest.baseline_version != spec.baseline_version:
         raise ManifestValidationError("Baseline 版本与冻结版本不一致")
     if baseline_manifest.source_dataset_version != source_manifest.dataset_version:
         raise ManifestValidationError("Baseline 引用的 Source Dataset 版本不一致")
-    if baseline_manifest.cleaning_rules_version != EXPECTED_CLEANING_RULES_VERSION:
+    if baseline_manifest.cleaning_rules_version != spec.cleaning_rules_version:
         raise ManifestValidationError("Baseline 清洗规则版本与冻结版本不一致")
     if (
         baseline_manifest.source_repository_commit
@@ -122,18 +177,19 @@ def _validate_versions(
         raise ManifestValidationError("两个 Manifest 的来源仓库 Commit 不一致")
 
 
-def _validate_source_counts(manifest: SourceManifest) -> None:
+def _validate_source_counts(manifest: SourceManifest, spec: BaselineSpec) -> None:
     actual_count = len(manifest.documents)
     if manifest.document_count != actual_count:
         raise ManifestValidationError("Source 声明的文档数与实际记录数不一致")
-    if actual_count != EXPECTED_SOURCE_COUNT:
+    if actual_count != spec.source_count:
         raise ManifestValidationError(
-            f"Source 文档总数必须是 {EXPECTED_SOURCE_COUNT}，实际是 {actual_count}"
+            f"Source 文档总数必须是 {spec.source_count}，实际是 {actual_count}"
         )
 
 
 def _validate_baseline_counts(
     manifest: BaselineManifest,
+    spec: BaselineSpec,
 ) -> tuple[
     tuple[BaselineDocumentSelection, ...],
     tuple[BaselineDocumentSelection, ...],
@@ -148,23 +204,23 @@ def _validate_baseline_counts(
 
     if manifest.document_count != actual_count:
         raise ManifestValidationError("Baseline 声明的文档数与实际记录数不一致")
-    if actual_count != EXPECTED_SOURCE_COUNT:
+    if actual_count != spec.source_count:
         raise ManifestValidationError(
-            f"Baseline 文档总数必须是 {EXPECTED_SOURCE_COUNT}，实际是 {actual_count}"
+            f"Baseline 文档总数必须是 {spec.source_count}，实际是 {actual_count}"
         )
     if manifest.included_document_count != len(included_documents):
         raise ManifestValidationError("Baseline 声明的纳入数与实际统计不一致")
     if manifest.excluded_document_count != len(excluded_documents):
         raise ManifestValidationError("Baseline 声明的排除数与实际统计不一致")
-    if len(included_documents) != EXPECTED_INCLUDED_COUNT:
+    if len(included_documents) != spec.included_count:
         raise ManifestValidationError(
             "Baseline 实际纳入文档数必须是 "
-            f"{EXPECTED_INCLUDED_COUNT}，实际是 {len(included_documents)}"
+            f"{spec.included_count}，实际是 {len(included_documents)}"
         )
-    if len(excluded_documents) != EXPECTED_EXCLUDED_COUNT:
+    if len(excluded_documents) != spec.excluded_count:
         raise ManifestValidationError(
             "Baseline 实际排除文档数必须是 "
-            f"{EXPECTED_EXCLUDED_COUNT}，实际是 {len(excluded_documents)}"
+            f"{spec.excluded_count}，实际是 {len(excluded_documents)}"
         )
 
     return included_documents, excluded_documents

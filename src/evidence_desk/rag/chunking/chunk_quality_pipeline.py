@@ -11,6 +11,8 @@ from evidence_desk.rag.chunking.strategies import (
     StructureThenRecursiveChunkingStrategy,
 )
 from evidence_desk.rag.corpus.manifest import (
+    FROZEN_ZH_BASELINE,
+    BaselineSpec,
     ManifestReadResult,
     load_and_validate_manifests,
 )
@@ -24,10 +26,14 @@ class ChunkQualityPipelineError(ValueError):
     """读取 Cleaned 文档或生成 Chunk Quality Report 失败。"""
 
 
-def generate_chunk_quality_report(corpus_root: Path) -> ChunkQualityReport:
-    """将29篇 Cleaned 文档切块，并保存600/80配置的质量报告。"""
+def generate_chunk_quality_report(
+    corpus_root: Path,
+    *,
+    spec: BaselineSpec = FROZEN_ZH_BASELINE,
+) -> ChunkQualityReport:
+    """将 Cleaned 文档切块，并保存600/80配置的质量报告。"""
 
-    chunks, manifests = build_chunks_from_cleaned_corpus(corpus_root)
+    chunks, manifests = build_chunks_from_cleaned_corpus(corpus_root, spec=spec)
     config = ChunkingConfig()
 
     report = build_chunk_quality_report(
@@ -56,10 +62,16 @@ def generate_chunk_quality_report(corpus_root: Path) -> ChunkQualityReport:
 
 def build_chunks_from_cleaned_corpus(
     corpus_root: Path,
+    *,
+    spec: BaselineSpec = FROZEN_ZH_BASELINE,
 ) -> tuple[list[Chunk], ManifestReadResult]:
-    """使用固定 Baseline 配置，从 Cleaned 语料重新生成 Chunk。"""
+    """使用固定 Baseline 配置，从 Cleaned 语料重新生成 Chunk。
 
-    manifests = load_and_validate_manifests(corpus_root)
+    spec 默认是阶段 1 冻结的 29 篇中文 Baseline；P6-04 的 33 篇对照组传
+    MULTILINGUAL_BASELINE。
+    """
+
+    manifests = load_and_validate_manifests(corpus_root, spec=spec)
     config = ChunkingConfig()
     strategy = StructureThenRecursiveChunkingStrategy(config)
     chunks: list[Chunk] = []

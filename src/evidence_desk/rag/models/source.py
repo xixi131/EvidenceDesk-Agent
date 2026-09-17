@@ -157,8 +157,12 @@ class SelectionPolicy(RagModel):
         description="判定英文占主导的中文字符比例阈值",
     )
     excluded_document_ids: list[NonEmptyString] = Field(
-        min_length=1,
-        description="第一次中文 Baseline 排除的文档编号",
+        # 允许为空列表：P6-04 的对照 Baseline 把 33 篇全部纳入、一篇不排除。
+        # 原来写 min_length=1 是因为当时只存在中文 Baseline 那一条（确实排除了
+        # 4 篇），把"这一条的事实"当成了"所有 Baseline 的约束"。真正的约束在
+        # manifest.py 的 BaselineSpec 里按条校验（每条 Baseline 各自钉死自己的
+        # 排除数），这里不该再叠一层与具体 Baseline 绑定的限制。
+        description="Baseline 排除的文档编号；全部纳入时为空列表",
     )
     future_experiment: NonEmptyString = Field(description="排除文档预留的后续实验")
 
