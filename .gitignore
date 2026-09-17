@@ -32,6 +32,9 @@ dist/
 .idea/
 .vscode/
 
+# Claude Code 本地会话数据（worktrees 是整份仓库副本，不入库）
+.claude/
+
 # Logs
 *.log
 logs/
