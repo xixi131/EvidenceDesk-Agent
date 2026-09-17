@@ -11,7 +11,9 @@ from typing import cast
 import weaviate
 from weaviate.classes.query import HybridFusion, MetadataQuery
 
+from evidence_desk.infrastructure.weaviate.schema import BM25_QUERY_PROPERTIES
 from evidence_desk.rag.models import RetrievalHit
+from evidence_desk.rag.tokenization import segment
 
 
 class WeaviateHybridRetriever:
@@ -42,9 +44,15 @@ class WeaviateHybridRetriever:
         if not query_text:
             raise ValueError("Hybrid 检索需要 query_text（原始问题文本）。")
 
+        # hybrid() 的 query 和 vector 是两条**互不干扰**的输入：query 只喂给
+        # BM25 那一路，vector 只喂给 Dense 那一路。所以这里可以给 BM25 喂切好
+        # 词的文本、同时给 Dense 喂从**原始问句**算出来的向量——分词只影响关键词
+        # 检索，不会污染语义检索。这也是这套方案能继续复用 Weaviate 自带融合
+        # 能力（而不必自己写 RRF）的原因。
         response = self._collection.query.hybrid(
-            query=query_text,
+            query=segment(query_text),
             vector=query_vector,
+            query_properties=BM25_QUERY_PROPERTIES,
             alpha=self._alpha,
             # RELATIVE_SCORE：把 Dense/BM25 各自的分数归一化到同一个区间再按
             # alpha 加权求和，比默认的排名融合（RANKED）更细腻，是 Weaviate

@@ -1,9 +1,11 @@
 """基于 Weaviate BM25 查询的关键词 Retriever（P6-03）。
 
 跟 WeaviateDenseRetriever 是同一个模式：接收查询、调 Weaviate、把结果映射成
-统一的 RetrievalHit。区别是不算向量距离，靠 Weaviate 自带的 BM25 关键词
-匹配算分（不需要我们自己实现 BM25 公式或做中文分词——Weaviate collection
-在 schema.py 里已经配了 GSE_CH 中文分词，交给数据库处理）。
+统一的 RetrievalHit。区别是不算向量距离，靠 Weaviate 自带的 BM25 公式算分。
+
+分词不交给 Weaviate 做：查询文本先过 segment() 切成空格分隔的词串，再去搜
+同样切好的 content_tokens/title_tokens 字段（原因见 rag/tokenization.py）。
+BM25 的打分公式仍然是数据库实现的，我们只接管"怎么切词"这一步。
 """
 
 from typing import cast
@@ -11,7 +13,9 @@ from typing import cast
 import weaviate
 from weaviate.classes.query import MetadataQuery
 
+from evidence_desk.infrastructure.weaviate.schema import BM25_QUERY_PROPERTIES
 from evidence_desk.rag.models import RetrievalHit
+from evidence_desk.rag.tokenization import segment
 
 
 class WeaviateBM25Retriever:
@@ -40,7 +44,13 @@ class WeaviateBM25Retriever:
             raise ValueError("BM25 检索需要 query_text（原始问题文本）。")
 
         response = self._collection.query.bm25(
-            query=query_text,
+            # 查询端分词：跟索引端（KnowledgeChunkIndexer）调的是同一个
+            # segment()，这是 BM25 能在中文上工作的前提。
+            query=segment(query_text),
+            # 必须显式限定搜 *_tokens 字段：不传的话 Weaviate 会搜遍所有可搜索
+            # 的 text 字段，包括没分过词的原始 content/title——那些字段上中文是
+            # 匹配不上的，白白拉低结果。
+            query_properties=BM25_QUERY_PROPERTIES,
             limit=top_k,
             return_metadata=MetadataQuery(score=True),
             return_properties=[

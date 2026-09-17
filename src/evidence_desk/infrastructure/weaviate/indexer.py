@@ -5,6 +5,7 @@ from collections.abc import Sequence
 import weaviate
 
 from evidence_desk.rag.models.chunk import Chunk
+from evidence_desk.rag.tokenization import TOKENIZER_VERSION, segment
 
 
 class KnowledgeChunkIndexer:
@@ -36,9 +37,16 @@ class KnowledgeChunkIndexer:
                         "title": chunk.title,
                         "section_path": chunk.section_path,
                         "content": chunk.content,
+                        # 索引端分词（P6-03）。查询端用的是同一个 segment()
+                        # （见 WeaviateBM25Retriever/WeaviateHybridRetriever）——
+                        # 两端共用一个函数是整个方案成立的前提，不能在这里图省事
+                        # 换成别的切法。
+                        "title_tokens": segment(chunk.title),
+                        "content_tokens": segment(chunk.content),
                         "source_url": chunk.source_url,
                         "dataset_version": chunk.dataset_version,
                         "embedding_model": embedding_model,
+                        "tokenizer_version": TOKENIZER_VERSION,
                     },
                     vector=list(vector),
                 )

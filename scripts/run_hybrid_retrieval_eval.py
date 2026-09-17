@@ -20,6 +20,7 @@ from evidence_desk.infrastructure.weaviate import (
     connect_to_weaviate,
     ensure_knowledge_chunk_collection,
 )
+from evidence_desk.rag.tokenization import TOKENIZER_VERSION
 
 DEV_SET_PATH = Path("data/evaluation/dev_v1.jsonl")
 JSON_REPORT_PATH = Path("data/evaluation/hybrid_retrieval_eval_v1.json")
@@ -49,19 +50,21 @@ def _to_markdown(summaries: dict[str, dict]) -> str:
         f"- Hybrid alpha：{HYBRID_ALPHA}（0=纯BM25，1=纯Dense）",
         f"- 题目数：{summaries[methods[0]]['num_cases']}",
         "",
-        "## ⚠️ 已知限制：BM25/Hybrid 数字不代表检索方式本身的能力",
+        "## 中文分词方案",
         "",
-        "排查结论：Weaviate 内置的 GSE_CH 中文分词器在这份语料上不可靠——"
-        "同样是常见双字词，「机密」能正确索引匹配，「标签」「构件」「取消」"
-        "等词确认存在于原文中却查不到（BM25 直接返回 0 条结果，不是排序"
-        "靠后）。已排除 AND/OR 查询逻辑、搜索字段范围、分词配置未生效这几个"
-        "假设，定位到是分词器本身对特定词的处理问题，不是本项目的检索/融合"
-        "代码逻辑问题。详细排查过程见"
+        f"分词版本：`{TOKENIZER_VERSION}`（应用侧 jieba + 领域词典，"
+        "见 `src/evidence_desk/rag/tokenization.py`）",
+        "",
+        "上一轮用 Weaviate 内置的 GSE_CH 分词器时，BM25 在中文上几乎完全失效"
+        "（Recall@5=0.1176，「标签」「构件」「取消」等词确认存在于原文却"
+        "返回 0 条）。根因是索引端和查询端切词不一致——BM25 靠 token 精确"
+        "相等匹配，两端切法不同就永远匹配不上。排查过程见"
         "`/Users/tangxitao/学习/My-Notes/Agent开发/错误记录/"
         "Weaviate中文BM25分词失效排查.md`。",
         "",
-        "**结论**：本轮 BM25/Hybrid 的数字不采纳为结论依据；Dense 检索"
-        "（阶段 2 已验证的 Baseline）继续作为生产使用的检索方式。",
+        "现在改为：索引和查询都调用同一个 `segment()` 切词，Weaviate 侧的"
+        "`content_tokens`/`title_tokens` 字段只用 WHITESPACE 分词（按空格切，"
+        "不做任何推断）。分词的确定性由应用代码保证，失配这类问题从结构上消除。",
         "",
         "## 总体指标",
         "",
@@ -105,7 +108,12 @@ def main() -> None:
 
     JSON_REPORT_PATH.write_text(
         json.dumps(
-            {"k": K, "hybrid_alpha": HYBRID_ALPHA, "methods": summaries},
+            {
+                "k": K,
+                "hybrid_alpha": HYBRID_ALPHA,
+                "tokenizer_version": TOKENIZER_VERSION,
+                "methods": summaries,
+            },
             ensure_ascii=False,
             indent=2,
         ),

@@ -9,6 +9,7 @@ requires-python = ">=3.11"
 dependencies = [
     "fastapi>=0.141.1",
     "httpx>=0.28.1",
+    "jieba>=0.42.1",
     "langchain>=1.3.16",
     "langchain-openai>=1.6.0",
     "langgraph>=1.2.11",
@@ -56,4 +57,11 @@ select = ["E4", "E7", "E9", "F", "I", "UP"]
 python_version = "3.11"
 strict = true
 mypy_path = "src"
+
+# jieba 没有随包提供类型标注（没有 py.typed），strict 模式下会报
+# import-untyped。它是被 rag/tokenization.py 单点封装起来的第三方库，
+# 只在那一个文件里出现，这里放行它的缺失标注。
+[[tool.mypy.overrides]]
+module = ["jieba.*", "jieba"]
+ignore_missing_imports = true
 
