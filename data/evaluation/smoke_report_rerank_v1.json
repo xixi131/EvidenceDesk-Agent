@@ -1,0 +1,528 @@
+{
+  "mode": "dense+rerank",
+  "top_k": 5,
+  "embedding_model": "BAAI/bge-small-zh-v1.5",
+  "answerable": 10,
+  "passed": 10,
+  "avg_recall": 1.0,
+  "cases": [
+    {
+      "id": "smoke-01",
+      "question": "如何启用 ACTIONS_STEP_DEBUG 调试日志？",
+      "should_answer": true,
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging"
+      ],
+      "matched_doc_ids": [
+        "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging"
+      ],
+      "recall": 1.0,
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging__structure-then-recursive-600-80-v1__0004__e76fef9d4ce47684",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging",
+          "score": 0.9994
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging__structure-then-recursive-600-80-v1__0003__78f46720994f9dfd",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging",
+          "score": 0.8959
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0005__8248524b2e52e711",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.8587
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs__structure-then-recursive-600-80-v1__0017__980544a234d9079d",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+          "score": 0.8118
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs__structure-then-recursive-600-80-v1__0005__e4df392d854069e5",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+          "score": 0.8118
+        }
+      ]
+    },
+    {
+      "id": "smoke-02",
+      "question": "GitHub Actions 里怎么管理和清理缓存？",
+      "should_answer": true,
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches"
+      ],
+      "matched_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches"
+      ],
+      "recall": 1.0,
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches__structure-then-recursive-600-80-v1__0003__ac76fcd9bf21f4bc",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+          "score": 0.996
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches__structure-then-recursive-600-80-v1__0001__32c0757f3cf0d0e4",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+          "score": 0.9894
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches__structure-then-recursive-600-80-v1__0004__a8368b75252b5466",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+          "score": 0.9852
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches__structure-then-recursive-600-80-v1__0007__0e761c0960ade91f",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+          "score": 0.9842
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches__structure-then-recursive-600-80-v1__0005__f486c179305ce372",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manage-caches",
+          "score": 0.9833
+        }
+      ]
+    },
+    {
+      "id": "smoke-03",
+      "question": "如何下载工作流运行产生的构件（artifact）？",
+      "should_answer": true,
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts"
+      ],
+      "matched_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts"
+      ],
+      "recall": 1.0,
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts__structure-then-recursive-600-80-v1__0002__f15e6ad4f3806bc0",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+          "score": 0.9969
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts__structure-then-recursive-600-80-v1__0002__c66e8d716e47f02e",
+          "parent_doc_id": "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts",
+          "score": 0.9862
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts__structure-then-recursive-600-80-v1__0004__2fcfb003dcebc6a3",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+          "score": 0.9378
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts__structure-then-recursive-600-80-v1__0009__9f4aa00eaf09dcc8",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+          "score": 0.9265
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts__structure-then-recursive-600-80-v1__0007__d0bf65d91f2e45dc",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+          "score": 0.89
+        }
+      ]
+    },
+    {
+      "id": "smoke-04",
+      "question": "GITHUB_TOKEN 有什么用，它的权限是怎么回事？",
+      "should_answer": true,
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__concepts__security__github_token"
+      ],
+      "matched_doc_ids": [
+        "github_actions_zh_actions__concepts__security__github_token"
+      ],
+      "recall": 1.0,
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__concepts__security__github_token__structure-then-recursive-600-80-v1__0002__80f877d4665884c6",
+          "parent_doc_id": "github_actions_zh_actions__concepts__security__github_token",
+          "score": 0.9949
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__concepts__security__compromised-runners__structure-then-recursive-600-80-v1__0009__440ca0cb716bd10f",
+          "parent_doc_id": "github_actions_zh_actions__concepts__security__compromised-runners",
+          "score": 0.9946
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__concepts__security__compromised-runners__structure-then-recursive-600-80-v1__0007__8a224346af75fe4f",
+          "parent_doc_id": "github_actions_zh_actions__concepts__security__compromised-runners",
+          "score": 0.9929
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__concepts__security__github_token__structure-then-recursive-600-80-v1__0001__135cbb990bedfac8",
+          "parent_doc_id": "github_actions_zh_actions__concepts__security__github_token",
+          "score": 0.9606
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__concepts__security__compromised-runners__structure-then-recursive-600-80-v1__0011__98eb0ad6e502bd54",
+          "parent_doc_id": "github_actions_zh_actions__concepts__security__compromised-runners",
+          "score": 0.9461
+        }
+      ]
+    },
+    {
+      "id": "smoke-05",
+      "question": "怎么在工作流里创建和使用机密（secret）？",
+      "should_answer": true,
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__concepts__security__secrets"
+      ],
+      "matched_doc_ids": [
+        "github_actions_zh_actions__concepts__security__secrets"
+      ],
+      "recall": 1.0,
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__concepts__security__secrets__structure-then-recursive-600-80-v1__0004__8c377ca69dc7bcd7",
+          "parent_doc_id": "github_actions_zh_actions__concepts__security__secrets",
+          "score": 0.9201
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__concepts__security__secrets__structure-then-recursive-600-80-v1__0003__5e79c3fddb33e408",
+          "parent_doc_id": "github_actions_zh_actions__concepts__security__secrets",
+          "score": 0.9133
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging__structure-then-recursive-600-80-v1__0002__c4809238632092ad",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging",
+          "score": 0.9083
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging__structure-then-recursive-600-80-v1__0001__02ae2e8d390966d3",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__monitor-workflows__enable-debug-logging",
+          "score": 0.8254
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__concepts__security__secrets__structure-then-recursive-600-80-v1__0002__2abc8a9d9d3b55ec",
+          "parent_doc_id": "github_actions_zh_actions__concepts__security__secrets",
+          "score": 0.7467
+        }
+      ]
+    },
+    {
+      "id": "smoke-06",
+      "question": "如何给自托管运行器添加标签？",
+      "should_answer": true,
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels"
+      ],
+      "matched_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels"
+      ],
+      "recall": 1.0,
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels__structure-then-recursive-600-80-v1__0004__01664d0caf2043f6",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+          "score": 0.9979
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels__structure-then-recursive-600-80-v1__0007__6ec8bcb260d58af5",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+          "score": 0.9976
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels__structure-then-recursive-600-80-v1__0003__e860b153194ab7f9",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+          "score": 0.9976
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels__structure-then-recursive-600-80-v1__0006__3e0840fdd29e8ee4",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__apply-labels",
+          "score": 0.9961
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__use-in-a-workflow__structure-then-recursive-600-80-v1__0007__32880b8471762de4",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__use-in-a-workflow",
+          "score": 0.996
+        }
+      ]
+    },
+    {
+      "id": "smoke-07",
+      "question": "我自己搭的 runner 好像出问题了，怎么排查？",
+      "should_answer": true,
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot"
+      ],
+      "matched_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot"
+      ],
+      "recall": 1.0,
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0018__eddc6c0ef0b309ab",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.548
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot__structure-then-recursive-600-80-v1__0025__baca4c9d1eeda109",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+          "score": 0.133
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot__structure-then-recursive-600-80-v1__0029__6b0871af32e429ac",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+          "score": 0.0573
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot__structure-then-recursive-600-80-v1__0046__5c0994603ac08910",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-runners__self-hosted-runners__monitor-and-troubleshoot",
+          "score": 0.0537
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0029__6e6a6666ec0087d6",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.0506
+        }
+      ]
+    },
+    {
+      "id": "smoke-08",
+      "question": "跑到一半的工作流不想要了，怎么把它停掉？",
+      "should_answer": true,
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__cancel-a-workflow-run",
+        "github_actions_zh_actions__reference__workflows-and-actions__workflow-cancellation"
+      ],
+      "matched_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__cancel-a-workflow-run",
+        "github_actions_zh_actions__reference__workflows-and-actions__workflow-cancellation"
+      ],
+      "recall": 1.0,
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__reference__workflows-and-actions__workflow-cancellation__structure-then-recursive-600-80-v1__0002__7cd98a4c9829bc15",
+          "parent_doc_id": "github_actions_zh_actions__reference__workflows-and-actions__workflow-cancellation",
+          "score": 0.7504
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__delete-a-workflow-run__structure-then-recursive-600-80-v1__0001__fc7a6fe43669e908",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__delete-a-workflow-run",
+          "score": 0.6587
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__cancel-a-workflow-run__structure-then-recursive-600-80-v1__0002__44397145945e8f6e",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__cancel-a-workflow-run",
+          "score": 0.6223
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0015__d4bb5cde5803dfe3",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.5777
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts__structure-then-recursive-600-80-v1__0005__d4dea4937d1fd17e",
+          "parent_doc_id": "github_actions_zh_actions__concepts__workflows-and-actions__workflow-artifacts",
+          "score": 0.5144
+        }
+      ]
+    },
+    {
+      "id": "smoke-09",
+      "question": "失败的作业可以只重跑失败的部分吗？",
+      "should_answer": true,
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs"
+      ],
+      "matched_doc_ids": [
+        "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs"
+      ],
+      "recall": 1.0,
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs__structure-then-recursive-600-80-v1__0010__2bdae571c24b94cd",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+          "score": 0.9723
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs__structure-then-recursive-600-80-v1__0001__674f54dbd449becf",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+          "score": 0.9464
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs__structure-then-recursive-600-80-v1__0003__9c357afcc4fa3e1a",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+          "score": 0.8815
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs__structure-then-recursive-600-80-v1__0009__d23c111444058c49",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+          "score": 0.3169
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs__structure-then-recursive-600-80-v1__0011__ec15472a3b999b39",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__re-run-workflows-and-jobs",
+          "score": 0.2595
+        }
+      ]
+    },
+    {
+      "id": "smoke-10",
+      "question": "工作流失败了，有什么排查思路？",
+      "should_answer": true,
+      "relevant_doc_ids": [
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows"
+      ],
+      "matched_doc_ids": [
+        "github_actions_zh_actions__how-tos__troubleshoot-workflows"
+      ],
+      "recall": 1.0,
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0002__0dd272eb8ff6dfde",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.9537
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0014__89a069f1639dd9d6",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.3312
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0005__8248524b2e52e711",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.1396
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history__structure-then-recursive-600-80-v1__0002__81b0563071efc4b5",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+          "score": 0.0837
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0012__b3feece898d333d7",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.0335
+        }
+      ]
+    },
+    {
+      "id": "smoke-11",
+      "question": "帮我用 Python 写一个快速排序算法。",
+      "should_answer": false,
+      "relevant_doc_ids": [],
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts__structure-then-recursive-600-80-v1__0007__d0bf65d91f2e45dc",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__download-workflow-artifacts",
+          "score": 0.0243
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manually-run-a-workflow__structure-then-recursive-600-80-v1__0008__27d35d24c1954018",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__manage-workflow-runs__manually-run-a-workflow",
+          "score": 0.0032
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history__structure-then-recursive-600-80-v1__0007__de111d6104e63b27",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+          "score": 0.002
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs__structure-then-recursive-600-80-v1__0017__9b01cf75c1d09676",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__monitor-workflows__use-workflow-run-logs",
+          "score": 0.0015
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history__structure-then-recursive-600-80-v1__0005__28dece66d42309be",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__monitor-workflows__view-workflow-run-history",
+          "score": 0.0014
+        }
+      ]
+    },
+    {
+      "id": "smoke-12",
+      "question": "今天上海的天气怎么样？",
+      "should_answer": false,
+      "relevant_doc_ids": [],
+      "retrieved": [
+        {
+          "rank": 1,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0024__bf51ef99d05ac3fc",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.0
+        },
+        {
+          "rank": 2,
+          "chunk_id": "github_actions_zh_actions__concepts__workflows-and-actions__contexts__structure-then-recursive-600-80-v1__0004__957bdb1b5bf214be",
+          "parent_doc_id": "github_actions_zh_actions__concepts__workflows-and-actions__contexts",
+          "score": 0.0
+        },
+        {
+          "rank": 3,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0023__20267d8b64189afd",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.0
+        },
+        {
+          "rank": 4,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0007__ca06f39efe5084a9",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.0
+        },
+        {
+          "rank": 5,
+          "chunk_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows__structure-then-recursive-600-80-v1__0003__45d64c8544630a46",
+          "parent_doc_id": "github_actions_zh_actions__how-tos__troubleshoot-workflows",
+          "score": 0.0
+        }
+      ]
+    }
+  ]
+}

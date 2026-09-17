@@ -1,4 +1,5 @@
 {
+  "mode": "dense",
   "top_k": 5,
   "embedding_model": "BAAI/bge-small-zh-v1.5",
   "answerable": 10,
