@@ -1,0 +1,225 @@
+{
+  "top_k": 5,
+  "answer_model": "gpt-5.5",
+  "prompt_version": "answer-v1",
+  "judge_prompt_version": "judge-v1",
+  "refusal": {
+    "num_cases": 60,
+    "accuracy": 0.9167,
+    "num_should_answer": 51,
+    "num_should_refuse": 9,
+    "over_refusal_count": 4,
+    "over_refusal_rate": 0.0784,
+    "missed_refusal_count": 1,
+    "missed_refusal_rate": 0.1111,
+    "over_refusal_no_retrieval": 1,
+    "over_refusal_with_retrieval": 3,
+    "over_refusal_cases": [
+      {
+        "id": "dev-037",
+        "tags": [
+          "exact_identifier"
+        ],
+        "question": "ACTIONS_RUNNER_DEBUG 这个变量是干什么的？",
+        "retrieval_hit": false,
+        "retrieved_sections": [
+          "变量",
+          "变量 > 关于",
+          "变量 > 关于"
+        ]
+      },
+      {
+        "id": "dev-055",
+        "tags": [
+          "multi_document",
+          "exact_identifier"
+        ],
+        "question": "env 上下文和 vars 上下文有什么区别？",
+        "retrieval_hit": true,
+        "retrieved_sections": [
+          "上下文",
+          "上下文 > 关于上下文",
+          "上下文 > 确定何时使用上下文"
+        ]
+      },
+      {
+        "id": "dev-056",
+        "tags": [
+          "semantic_paraphrase"
+        ],
+        "question": "运行历史记录会永久保留吗，还是有清理策略？",
+        "retrieval_hit": true,
+        "retrieved_sections": [
+          "查看工作流程运行历史记录 > 查看特定工作流程运行的详细信息",
+          "查看工作流程运行历史记录 > 查看特定工作流程运行的详细信息",
+          "查看工作流程运行历史记录 > 查看特定工作流程运行的详细信息"
+        ]
+      },
+      {
+        "id": "dev-060",
+        "tags": [
+          "security",
+          "semantic_paraphrase"
+        ],
+        "question": "什么情况下 runner 会被判定为已入侵，有哪些迹象？",
+        "retrieval_hit": true,
+        "retrieved_sections": [
+          "被入侵的运行器 > 受损运行器的潜在影响",
+          "被入侵的运行器 > 受损运行器的潜在影响 > 访问密钥",
+          "被入侵的运行器"
+        ]
+      }
+    ],
+    "missed_refusal_cases": [
+      {
+        "id": "dev-050",
+        "tags": [
+          "ambiguous"
+        ],
+        "question": "它一直失败，帮我看看。",
+        "answer": "可通过多种方式排查工作流运行失败的问题。建议先查看该工作流程运行的详细信息和可用日志。\n\n如果需要重新运行失败的作业并启用运行器诊断日志和单步调试日志，可使用：\n\n```shell\ngh run rerun RUN_ID --failed --debug\n```\n\n如果是 DNS 相关问题，建议查看可用日志、供应商文档，或咨询管理员获取进一步帮助。"
+      }
+    ]
+  },
+  "judge": {
+    "num_judged": 48,
+    "parse_error_count": 0,
+    "faithfulness": {
+      "supported": 0.8958,
+      "partially_supported": 0.1042,
+      "unsupported": 0.0
+    },
+    "answer_quality": {
+      "correct": 0.9583,
+      "partial": 0.0417,
+      "incorrect": 0.0
+    },
+    "unfaithful_cases": [
+      {
+        "case_id": "smoke-10",
+        "question": "工作流失败了，有什么排查思路？",
+        "answer": "可按以下思路排查工作流失败：\n\n1. 查看该工作流运行的详细信息和运行历史记录。\n2. 使用工作流运行日志：每个工作流运行都会生成活动日志，可以查看、搜索和下载日志。\n3. 如果是工作流执行阶段的问题，重点检查触发工作流并创建运行后出现的问题。\n4. 如果某个作业被意外跳过，或不该运行却运行了，可调试作业条件：\n   - 在工作流运行中单击相应作业；\n   - 从作业菜单下载日志存档；\n   - 打开 `JOB-NAME/system.txt`；\n   - 查找 `Evaluating`、`Expanded`、`Result` 行。\n   - `Expanded` 行会显示代入 `if` 条件的实际运行时值，用于判断表达式为何为 `true` 或 `false`。\n5. 如果使用命令查看失败运行，可使用 `--exit-status` 标记让命令以非零状态退出。",
+        "faithfulness": "partially_supported",
+        "answer_quality": "correct",
+        "unsupported_claims": [
+          "查看该工作流运行的详细信息",
+          "如果使用命令查看失败运行"
+        ],
+        "reason": "回答整体覆盖了参考资料中的日志、运行历史、执行阶段问题、作业条件表达式和 --exit-status 等排查思路，但个别表述在参考资料中没有直接依据。"
+      },
+      {
+        "case_id": "dev-039",
+        "question": "工作流跑不通，官方有没有一套排查方法论？",
+        "answer": "有。官方将排查分为两类：\n\n1. **排查工作流触发器问题**\n   - 检查触发事件是否只在默认分支生效，例如 `issues`、`schedule`。\n   - 检查 `pull_request` 是否存在合并冲突。\n   - 检查提交信息中是否包含跳过注释，导致 `push` 或 `pull_request` 工作流不运行。\n   - 检查分支、标签、路径筛选条件是否把工作流过滤掉。\n   - 对路径筛选，注意差异评估仅限前 300 个文件。\n\n2. **排查工作流执行问题**\n   - 工作流已触发并创建运行后，再排查执行阶段的问题。\n   - 如果某个作业意外跳过或意外运行，可以查看作业条件表达式日志：\n     1. 在工作流运行中点击相应作业；\n     2. 从作业菜单下载日志存档；\n     3. 打开 `JOB-NAME/system.txt`；\n     4. 查找 `Evaluating`、`Expanded`、`Result` 行。\n   - `Expanded` 行会显示 `if` 条件中的实际运行时值，用于判断表达式为何为 `true` 或 `false`。",
+        "faithfulness": "partially_supported",
+        "answer_quality": "correct",
+        "unsupported_claims": [
+          "官方将排查分为两类"
+        ],
+        "reason": "回答覆盖了参考资料中的触发、筛选、跳过、条件表达式日志和执行阶段排查要点，但“官方将排查分为两类”这一归纳在参考资料中没有明确依据。"
+      },
+      {
+        "case_id": "dev-040",
+        "question": "self-hosted runner 显示离线，第一步该查什么？",
+        "answer": "第一步检查自托管运行器应用程序服务是否在运行。\n\n- Windows：用 PowerShell 查看服务状态，例如：\n```powershell\nGet-Service \"actions.runner.octo-org-octo-repo.runner01.service\" | Select-Object Name, Status\n```\n确认 `Status` 是否为 `Running`。\n\n- macOS：使用 `launchctl` 监视服务活动，服务名可从运行器目录中的 `.service` 文件查找。\n\n- Linux：查看 `systemd` 服务，服务文件通常在：\n```text\n/etc/systemd/system/actions.runner.<org>-<repo>.<runnerName>.service\n```",
+        "faithfulness": "partially_supported",
+        "answer_quality": "correct",
+        "unsupported_claims": [
+          "第一步检查自托管运行器应用程序服务是否在运行。"
+        ],
+        "reason": "回答围绕检查自托管运行器服务状态展开，并给出了参考资料中支持的 Windows、macOS、Linux 检查方式，但参考资料未明确说明这是“第一步”。"
+      },
+      {
+        "case_id": "dev-050",
+        "question": "它一直失败，帮我看看。",
+        "answer": "可通过多种方式排查工作流运行失败的问题。建议先查看该工作流程运行的详细信息和可用日志。\n\n如果需要重新运行失败的作业并启用运行器诊断日志和单步调试日志，可使用：\n\n```shell\ngh run rerun RUN_ID --failed --debug\n```\n\n如果是 DNS 相关问题，建议查看可用日志、供应商文档，或咨询管理员获取进一步帮助。",
+        "faithfulness": "partially_supported",
+        "answer_quality": "partial",
+        "unsupported_claims": [
+          "建议先查看该工作流程运行的详细信息和可用日志。"
+        ],
+        "reason": "回答给出了参考资料支持的重新运行调试命令和 DNS 排查建议，但未能实际定位失败原因，且“查看详细信息”在参考资料中依据不足。"
+      },
+      {
+        "case_id": "dev-051",
+        "question": "为了防止 fork 提交的 PR 里的恶意代码被执行，这层审批保护具体流程是什么？",
+        "answer": "具有写入权限的仓库维护者可以按以下流程审批来自公共 fork 的 PR 工作流运行：\n\n1. 进入仓库，点击 **Pull requests**。\n2. 在拉取请求列表中，打开需要审查的 PR。\n3. 点击 **Files changed**。\n4. 检查 PR 中的更改，确认是否可以安全地在该 PR 分支上运行工作流；尤其要注意 `.github/workflows/` 目录中对工作流文件的任何修改。\n5. 如果确认可以运行，点击右上角的 **“等待审批”** 按钮，打开 **“合并状态”** 面板。\n6. 点击 **“批准工作流”**，工作流才会运行。",
+        "faithfulness": "partially_supported",
+        "answer_quality": "correct",
+        "unsupported_claims": [
+          "来自公共 fork 的 PR 工作流运行"
+        ],
+        "reason": "回答基本完整复述了参考资料中的审批流程，但“公共 fork”这一限定在参考资料中没有直接依据。"
+      }
+    ],
+    "low_quality_cases": [
+      {
+        "case_id": "smoke-08",
+        "question": "跑到一半的工作流不想要了，怎么把它停掉？",
+        "answer": "可以取消正在运行的工作流运行。\n\n需要注意：取消时 GitHub 会重新评估正在运行作业的 `if` 条件；如果条件为 `true`（例如使用了 `if: always()`），作业可能不会被常规取消。此时可以使用 API 强制取消运行。\n\n如果常规取消无效，参考资料建议使用 REST API 的“强制取消工作流运行”终结点。",
+        "faithfulness": "supported",
+        "answer_quality": "partial",
+        "unsupported_claims": [],
+        "reason": "回答内容均有参考资料依据，但只说明了可取消和强制取消的注意事项，未具体说明常规取消的操作方式，因此未完整回答“怎么停掉”。"
+      },
+      {
+        "case_id": "dev-050",
+        "question": "它一直失败，帮我看看。",
+        "answer": "可通过多种方式排查工作流运行失败的问题。建议先查看该工作流程运行的详细信息和可用日志。\n\n如果需要重新运行失败的作业并启用运行器诊断日志和单步调试日志，可使用：\n\n```shell\ngh run rerun RUN_ID --failed --debug\n```\n\n如果是 DNS 相关问题，建议查看可用日志、供应商文档，或咨询管理员获取进一步帮助。",
+        "faithfulness": "partially_supported",
+        "answer_quality": "partial",
+        "unsupported_claims": [
+          "建议先查看该工作流程运行的详细信息和可用日志。"
+        ],
+        "reason": "回答给出了参考资料支持的重新运行调试命令和 DNS 排查建议，但未能实际定位失败原因，且“查看详细信息”在参考资料中依据不足。"
+      }
+    ],
+    "manual_review_sample": [
+      {
+        "case_id": "smoke-01",
+        "question": "如何启用 ACTIONS_STEP_DEBUG 调试日志？",
+        "answer": "在包含工作流的存储库中创建机密或变量：\n\n`ACTIONS_STEP_DEBUG` = `true`\n\n设置后，步骤日志中会显示更多调试事件。若同时设置了机密和变量，机密的值优先于变量。",
+        "faithfulness": "supported",
+        "answer_quality": "correct",
+        "unsupported_claims": [],
+        "reason": "回答准确说明了在包含工作流的存储库中将 ACTIONS_STEP_DEBUG 机密或变量设为 true，并提到设置后的效果及机密优先级，均有参考资料依据。"
+      },
+      {
+        "case_id": "smoke-02",
+        "question": "GitHub Actions 里怎么管理和清理缓存？",
+        "answer": "在 GitHub Actions 中可以通过 Web 界面、REST API 或 GitHub CLI 管理和清理缓存。\n\n**通过 Web 界面查看缓存：**\n1. 进入 GitHub 仓库主页。\n2. 点击仓库下方的 **Actions**。\n3. 在左侧 **Management** 部分点击 **Caches**。\n4. 查看缓存列表，包括缓存占用空间、创建时间、上次使用时间。\n5. 可按分支筛选，或用 `key: key-name` 按缓存键筛选。\n\n**通过 Web 界面删除缓存：**\n1. 进入仓库主页。\n2. 点击 **Actions**。\n3. 在左侧 **Management** 下点击 **Caches**。\n4. 在要删除的缓存项右侧点击 **Delete cache**。\n\n注意：只有对仓库有 `write` 权限的用户可以使用 Web 界面删除缓存条目。\n\n**其他管理方式：**\n- 使用 REST API 列出或删除缓存。\n- 使用命令行中的 `gh cache` 子命令管理缓存。\n- 可以使用 GitHub CLI 删除特定分支的缓存，例如在拉取请求关闭后删除该分支创建的缓存。",
+        "faithfulness": "supported",
+        "answer_quality": "correct",
+        "unsupported_claims": [],
+        "reason": "回答涵盖了参考资料中通过 Web 界面查看/筛选/删除缓存、所需权限，以及 REST API 和 GitHub CLI 管理清理缓存的方式。"
+      },
+      {
+        "case_id": "smoke-03",
+        "question": "如何下载工作流运行产生的构件（artifact）？",
+        "answer": "可通过以下方式下载工作流运行产生的构件（artifact）：\n\n1. **在 GitHub 网页中下载**\n   - 打开 Actions 中对应的工作流。\n   - 在工作流运行列表中，单击运行名称，进入运行摘要。\n   - 在“工件”部分，单击要下载的工件。\n\n2. **使用 GitHub CLI 下载**\n   - 下载某次运行中的特定构件：\n     ```shell\n     gh run download RUN_ID -n ARTIFACT_NAME\n     ```\n   - 下载某次运行产生的所有构件：\n     ```shell\n     gh run download RUN_ID\n     ```\n   - 如果未指定 `run-id`，GitHub CLI 会显示交互式菜单，让你选择最近的运行结果。\n   - 从存储库所有运行中下载特定构件：\n     ```shell\n     gh run download -n ARTIFACT_NAME-1 ARTIFACT_NAME-2\n     ```\n\nGitHub CLI 会根据构件名称将每个构件下载到单独目录中；如果只指定单个构件，则会提取到当前目录。",
+        "faithfulness": "supported",
+        "answer_quality": "correct",
+        "unsupported_claims": [],
+        "reason": "回答中的网页下载步骤、GitHub CLI 下载方式、未指定 run-id 的交互式菜单以及下载目录行为均可由参考资料支持，且完整回答了如何下载 artifact。"
+      },
+      {
+        "case_id": "smoke-04",
+        "question": "GITHUB_TOKEN 有什么用，它的权限是怎么回事？",
+        "answer": "`GITHUB_TOKEN` 是 GitHub Actions 在每个工作流作业开始时自动创建的唯一密钥，用于在工作流作业中进行身份验证。\n\n它的作用：\n\n- 代表安装在仓库中的 GitHub App 进行身份验证。\n- 可用于在工作流中执行需要 GitHub 身份认证的操作。\n- 也可以通过 `github.token` 上下文使用。\n- 作业完成或达到最长有效期后会过期。\n\n权限方面：\n\n- `GITHUB_TOKEN` 是 GitHub App 的安装访问令牌。\n- 令牌权限仅限于包含该工作流的仓库。\n- 它不会默认授予跨仓库访问权限，因为 GitHub Actions 被设计为一次仅适用于单个存储库。\n- `GITHUB_TOKEN` 的权限可在工作流语法中通过 `permissions` 配置。\n- 它授予的访问能力与仓库写入访问用户相关，因为有写入权限的用户可以创建或修改工作流来访问该令牌，因此使用时需要谨慎。\n- 如果需要跨仓库或更高权限操作，应通过机密引用 GitHub 身份验证令牌或 SSH 密钥，但错误使用令牌类型可能授予比预期更广的访问权限。\n\n有效期：\n\n- GitHub 托管运行器上，最长生存时间为 6 小时。\n- 自托管运行器上，作业最长可运行 5 天，但 `GITHUB_TOKEN` 最多只能刷新 24 小时；作业超过 24 小时时，应改用 personal access token 或其他身份验证方法。",
+        "faithfulness": "supported",
+        "answer_quality": "correct",
+        "unsupported_claims": [],
+        "reason": "回答准确概括了 GITHUB_TOKEN 的用途、仓库范围权限、与 GitHub App 安装访问令牌的关系、跨仓库限制及有效期等内容，均可由参考资料支持。"
+      },
+      {
+        "case_id": "smoke-05",
+        "question": "怎么在工作流里创建和使用机密（secret）？",
+        "answer": "在 GitHub Actions 中：\n\n1. **创建机密（secret）**\n   - 可以在 **组织、仓库或仓库环境** 中创建机密。\n   - 创建方式包括：\n     - 使用 GitHub UI 创建；\n     - 通过 REST API 提交机密。\n   - 机密在到达 GitHub 之前会使用 Libsodium 密封盒加密。\n\n2. **在工作流中使用机密**\n   - GitHub Actions 只有在你**显式地将机密包含在工作流中**时，才能读取该机密。\n   - 要让机密用于操作，必须在工作流文件中将机密设置为：\n     - 操作的输入；或\n     - 环境变量。\n   - 具体应使用哪些输入或环境变量，需要查看对应 action 的 README。\n\n3. **权限控制**\n   - 组织级机密可以在多个仓库之间共享，并可通过策略限制哪些仓库能访问。\n   - 环境机密可以配置所需审阅者，审阅者批准前，工作流作业无法访问该环境机密。",
+        "faithfulness": "supported",
+        "answer_quality": "correct",
+        "unsupported_claims": [],
+        "reason": "回答中的创建位置、创建方式、加密机制、显式包含、作为输入或环境变量使用以及权限控制均可由参考资料支持，并且回答了如何创建和使用机密的问题。"
+      }
+    ]
+  }
+}

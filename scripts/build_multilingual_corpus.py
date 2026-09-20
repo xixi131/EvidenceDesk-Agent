@@ -91,9 +91,7 @@ def main() -> None:
         encoding="utf-8",
     )
 
-    cleaning_report = generate_cleaned_corpus(
-        TARGET_ROOT, spec=MULTILINGUAL_BASELINE
-    )
+    cleaning_report = generate_cleaned_corpus(TARGET_ROOT, spec=MULTILINGUAL_BASELINE)
     chunk_report = generate_chunk_quality_report(
         TARGET_ROOT, spec=MULTILINGUAL_BASELINE
     )

@@ -38,18 +38,56 @@ def make_hit(parent_doc_id: str = "doc_a") -> RetrievalHit:
 
 
 def test_answer_with_evidence_returns_text_and_citations() -> None:
+    fake = FakeLLM("将 ACTIONS_STEP_DEBUG 设为 true [1]。")
+    service = RagAnswerService(fake, temperature=0.0)
+
+    result = service.answer("如何开启调试日志？", [make_hit()])
+
+    assert result.answered is True
+    assert result.answer == "将 ACTIONS_STEP_DEBUG 设为 true [1]。"
+    assert len(result.citations) == 1
+    assert (
+        result.citations[0].source_url == "https://docs.github.com/enable-debug-logging"
+    )
+    assert result.prompt_version == "answer-v2"
+
+
+def test_answer_without_markers_yields_no_citations() -> None:
+    """模型没标任何 [n] 时来源列表就是空的。
+
+    这**不是** bug，是一个真实的失败模式（该引不引）——留给
+    Citation Correctness 指标去测，不能在生产侧悄悄补上。
+    """
+
     fake = FakeLLM("将 ACTIONS_STEP_DEBUG 设为 true。")
     service = RagAnswerService(fake, temperature=0.0)
 
     result = service.answer("如何开启调试日志？", [make_hit()])
 
     assert result.answered is True
-    assert result.answer == "将 ACTIONS_STEP_DEBUG 设为 true。"
-    assert len(result.citations) == 1
-    assert (
-        result.citations[0].source_url == "https://docs.github.com/enable-debug-logging"
-    )
-    assert result.prompt_version == "answer-v1"
+    assert result.citations == []
+
+
+def test_only_cited_hits_appear_in_citations() -> None:
+    """来源列表由回答决定，不是检索到什么就列什么。"""
+
+    fake = FakeLLM("第一句 [2]。")
+    service = RagAnswerService(fake, temperature=0.0)
+
+    result = service.answer("问题", [make_hit("doc_a"), make_hit("doc_b")])
+
+    assert [c.index for c in result.citations] == [2]
+    assert result.citations[0].parent_doc_id == "doc_b"
+
+
+def test_system_prompt_requires_inline_markers() -> None:
+    """引用规则必须在系统指令里，否则模型根本不会标。"""
+
+    fake = FakeLLM("回答 [1]")
+    RagAnswerService(fake, temperature=0.0).answer("问题", [make_hit()])
+
+    system, _, _ = fake.calls[0]
+    assert "[1]" in system and "引用规则" in system
 
 
 def test_prompt_contains_context_question_and_temperature() -> None:
