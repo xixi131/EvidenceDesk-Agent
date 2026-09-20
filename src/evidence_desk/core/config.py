@@ -43,6 +43,13 @@ class Settings(BaseSettings):
     rerank_candidate_top_n: int = Field(default=20, ge=1, le=100)
     reranker_model: str = "BAAI/bge-reranker-v2-m3"
 
+    # P6-02 Query Rewrite：「失败后改写」这一组用什么信号判定"这次检索没捞好"。
+    # 生产环境拿不到标准答案，不能用 Recall 判失败，只能用检索器自己给的分数：
+    # Top-1 的 score 低于这个阈值就认为没把握，触发改写重查一次。
+    # 默认 0.62 是个起点不是定论——脚本会打印 Top-1 分数的分布，
+    # 按真实数据调完再写回这里。
+    query_rewrite_score_threshold: float = Field(default=0.62, ge=0.0, le=1.0)
+
     # 回答生成（阶段 1C 证据约束回答）。
     # API Key 只从环境/.env 读取，绝不写进代码或提交进仓库。
     openai_api_key: str | None = None

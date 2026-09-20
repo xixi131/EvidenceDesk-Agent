@@ -1,0 +1,148 @@
+{
+  "k": 5,
+  "num_cases": 51,
+  "retriever": "Dense",
+  "rewrite_model": "gpt-5.5",
+  "prompt_version": "query-rewrite-v1",
+  "failure_threshold": 0.62,
+  "methods": {
+    "Original": {
+      "num_cases": 51,
+      "recall@5": 0.9314,
+      "precision@5": 0.2157,
+      "mrr": 0.8693,
+      "num_rewritten": 0,
+      "rewrite_rate": 0.0,
+      "num_fallback": 0,
+      "ms_per_query": 9.8,
+      "ms_breakdown": {
+        "probe": 0.0,
+        "rewrite": 0.0,
+        "retrieval": 9.8
+      },
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 0.9211,
+        "multi_document": 0.8333,
+        "rerun": 1.0,
+        "runner": 0.75,
+        "secret": 1.0,
+        "security": 1.0,
+        "semantic_paraphrase": 0.9118
+      }
+    },
+    "RewriteAlways": {
+      "num_cases": 51,
+      "recall@5": 0.9412,
+      "precision@5": 0.2196,
+      "mrr": 0.9036,
+      "num_rewritten": 49,
+      "rewrite_rate": 0.9608,
+      "num_fallback": 0,
+      "ms_per_query": 2675.4,
+      "ms_breakdown": {
+        "probe": 0.0,
+        "rewrite": 2666.7,
+        "retrieval": 8.8
+      },
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 0.8684,
+        "multi_document": 0.8889,
+        "rerun": 1.0,
+        "runner": 1.0,
+        "secret": 1.0,
+        "security": 1.0,
+        "semantic_paraphrase": 1.0
+      }
+    },
+    "RewriteOnFailure": {
+      "num_cases": 51,
+      "recall@5": 0.9412,
+      "precision@5": 0.2196,
+      "mrr": 0.8807,
+      "num_rewritten": 11,
+      "rewrite_rate": 0.2157,
+      "num_fallback": 0,
+      "ms_per_query": 679.2,
+      "ms_breakdown": {
+        "probe": 20.5,
+        "rewrite": 657.0,
+        "retrieval": 7.8
+      },
+      "tag_recall@5": {
+        "artifact": 1.0,
+        "cache": 1.0,
+        "concept": 1.0,
+        "debug": 1.0,
+        "exact_identifier": 0.8684,
+        "multi_document": 0.8889,
+        "rerun": 1.0,
+        "runner": 1.0,
+        "secret": 1.0,
+        "security": 1.0,
+        "semantic_paraphrase": 1.0
+      }
+    }
+  },
+  "identifiers": {
+    "RewriteAlways": {
+      "num_cases_with_identifier": 8,
+      "num_identifiers": 8,
+      "num_lost": 0,
+      "retention": 1.0,
+      "num_cases_with_loss": 0,
+      "num_cases_with_introduced": 0,
+      "details": []
+    },
+    "RewriteOnFailure": {
+      "num_cases_with_identifier": 1,
+      "num_identifiers": 1,
+      "num_lost": 0,
+      "retention": 1.0,
+      "num_cases_with_loss": 0,
+      "num_cases_with_introduced": 0,
+      "details": []
+    }
+  },
+  "regressions": {
+    "RewriteAlways": [
+      {
+        "case_id": "dev-058",
+        "tags": [
+          "exact_identifier"
+        ],
+        "recall_before": 1.0,
+        "recall_after": 0.0,
+        "original": "工件（artifact）的默认保留时间是多久？",
+        "rewritten": "GitHub Actions 工件（artifact）的默认保留时间是多久？"
+      }
+    ],
+    "RewriteOnFailure": [
+      {
+        "case_id": "dev-058",
+        "tags": [
+          "exact_identifier"
+        ],
+        "recall_before": 1.0,
+        "recall_after": 0.0,
+        "original": "工件（artifact）的默认保留时间是多久？",
+        "rewritten": "GitHub Actions 中工件（artifact）的默认保留时间是多久？"
+      }
+    ]
+  },
+  "top1_score_distribution": {
+    "min": 0.5569669604301453,
+    "p25": 0.6398399472236633,
+    "median": 0.711112380027771,
+    "p75": 0.7566710710525513,
+    "max": 0.8368254899978638,
+    "triggered": 11
+  }
+}
