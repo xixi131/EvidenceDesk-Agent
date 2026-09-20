@@ -140,7 +140,9 @@ def build_react_agent(
         middleware.append(
             HumanInTheLoopMiddleware(
                 interrupt_on={
-                    "create_support_ticket": {"allowed_decisions": ["approve", "reject"]}
+                    "create_support_ticket": {
+                        "allowed_decisions": ["approve", "reject"]
+                    }
                 }
             )
         )

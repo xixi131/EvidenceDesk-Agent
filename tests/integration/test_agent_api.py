@@ -68,7 +68,12 @@ class FakeTicketService:
         self._next_id = 1
 
     def create_ticket(
-        self, *, idempotency_key: str, title: str, description: str, context_summary: str
+        self,
+        *,
+        idempotency_key: str,
+        title: str,
+        description: str,
+        context_summary: str,
     ) -> tuple[Ticket, bool]:
         existing = self._by_key.get(idempotency_key)
         if existing is not None:
@@ -185,7 +190,10 @@ async def test_agent_create_ticket_requires_approval_then_is_idempotent() -> Non
             json={"question": "帮我建个工单", "conversation_id": "conv-ticket"},
         )
         assert pending.json()["data"]["status"] == "pending_approval"
-        assert pending.json()["data"]["pending_approval"]["tool_name"] == "create_support_ticket"
+        assert (
+            pending.json()["data"]["pending_approval"]["tool_name"]
+            == "create_support_ticket"
+        )
         assert ticket_service._by_key == {}  # 还没批准，不应该已经落库
 
         # 批准 -> 真正执行，工单被创建。

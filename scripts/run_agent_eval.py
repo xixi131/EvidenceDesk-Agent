@@ -131,7 +131,9 @@ def main() -> None:
 
     cases = load_agent_eval_cases(EVAL_SET_PATH)
 
-    embedder = BgeEmbeddingAdapter(settings.embedding_model, settings.embedding_cache_dir)
+    embedder = BgeEmbeddingAdapter(
+        settings.embedding_model, settings.embedding_cache_dir
+    )
     chat_model = ChatOpenAI(
         model=settings.answer_model,
         api_key=SecretStr(settings.openai_api_key),
@@ -176,16 +178,22 @@ def main() -> None:
         client.close()
 
     JSON_REPORT_PATH.write_text(
-        json.dumps(_report_to_dict(report, settings.answer_model), ensure_ascii=False, indent=2),
+        json.dumps(
+            _report_to_dict(report, settings.answer_model), ensure_ascii=False, indent=2
+        ),
         encoding="utf-8",
     )
-    MD_REPORT_PATH.write_text(_report_to_markdown(report, settings.answer_model), encoding="utf-8")
+    MD_REPORT_PATH.write_text(
+        _report_to_markdown(report, settings.answer_model), encoding="utf-8"
+    )
 
     print(f"题目数：{report.num_cases}")
     print(f"Route Accuracy：{report.route_accuracy:.4f}")
     print(f"Tool Selection Accuracy：{report.tool_selection_accuracy:.4f}")
     print(f"Tool Argument Valid Rate：{report.tool_argument_valid_rate:.4f}")
-    print(f"Human Review Required Accuracy：{report.human_review_required_accuracy:.4f}")
+    print(
+        f"Human Review Required Accuracy：{report.human_review_required_accuracy:.4f}"
+    )
     print(f"Write Without Approval Rate：{report.write_without_approval_rate:.4f}")
     print(f"Task Success Rate：{report.task_success_rate:.4f}")
     print(f"Max Steps Violation Rate：{report.max_steps_violation_rate:.4f}")

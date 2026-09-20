@@ -72,7 +72,9 @@ class BgeRerankerAdapter:
         # zip 出「(分数, 命中)」再按分数从高到低排序。
         # key=lambda pair: pair[0] 指定只按分数排，不去比第二个元素——
         # RetrievalHit 之间没法比大小，分数打平时若去比它会直接抛异常。
-        ranked = sorted(zip(scores, hits, strict=True), key=lambda p: p[0], reverse=True)
+        ranked = sorted(
+            zip(scores, hits, strict=True), key=lambda p: p[0], reverse=True
+        )
 
         # 重新编号：rank 要反映**重排后**的名次，而不是检索时的原始名次，
         # 否则下游看到的 rank 会是乱序的。score 也换成重排分数，distance

@@ -77,7 +77,9 @@ def test_fetches_candidates_then_truncates_to_top_k() -> None:
 def test_rerank_actually_changes_order() -> None:
     """重排结果要真的按重排器的顺序来，不能还是原来的检索顺序。"""
 
-    retriever = RerankingRetriever(FakeRetriever(), ReverseReranker(), candidate_top_n=20)
+    retriever = RerankingRetriever(
+        FakeRetriever(), ReverseReranker(), candidate_top_n=20
+    )
 
     hits = retriever.search([0.1], top_k=3, query_text="怎么取消工作流")
 

@@ -118,7 +118,9 @@ def build_agent_tools(
             memory_store = get_store()
             # namespace 用 (user_id, "memories") 这个二元组，把不同用户的记忆
             # 隔在不同「文件夹」里；key 用随机 uuid，每条记忆各占一条，不覆盖。
-            memory_store.put((user_id, "memories"), uuid.uuid4().hex, {"content": memory})
+            memory_store.put(
+                (user_id, "memories"), uuid.uuid4().hex, {"content": memory}
+            )
             return "已记住这条信息。"
 
         @tool
@@ -146,7 +148,9 @@ def build_agent_tools(
         # 用户、拿到同意才调用（阶段 4 范围内是「提示词引导」，不是技术强制拦截；
         # 阶段 5 会补 interrupt 硬审批）。
         @tool
-        def create_support_ticket(title: str, description: str, context_summary: str) -> str:
+        def create_support_ticket(
+            title: str, description: str, context_summary: str
+        ) -> str:
             """在知识文档和已有工具都无法解决用户问题时，创建一张支持工单。
 
             仅在已经用过 search_docs / get_workflow_run / list_workflow_jobs 仍

@@ -122,9 +122,7 @@ def main() -> None:
         retrievers: dict[str, ChunkRetriever] = {
             "Dense": dense,
             "Hybrid": hybrid,
-            "Dense+Rerank": RerankingRetriever(
-                dense, reranker, candidate_top_n=top_n
-            ),
+            "Dense+Rerank": RerankingRetriever(dense, reranker, candidate_top_n=top_n),
             "Hybrid+Rerank": RerankingRetriever(
                 hybrid, reranker, candidate_top_n=top_n
             ),

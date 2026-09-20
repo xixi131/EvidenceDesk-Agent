@@ -47,7 +47,6 @@ def route_correct(expected_route: str, actual_tool_calls: list[str]) -> bool:
     return expected_route in actual_tool_calls
 
 
-
 def tool_selection_correct(
     expected_tool_calls: list[str], actual_tool_calls: list[str]
 ) -> bool:

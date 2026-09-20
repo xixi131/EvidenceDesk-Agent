@@ -73,14 +73,19 @@ def _to_markdown(summaries: dict[str, dict]) -> str:
     ]
     for name in methods:
         s = summaries[name]
-        lines.append(f"| {name} | {s[f'recall@{K}']:.4f} | {s[f'precision@{K}']:.4f} | {s['mrr']:.4f} |")
+        lines.append(
+            f"| {name} | {s[f'recall@{K}']:.4f} | {s[f'precision@{K}']:.4f} | {s['mrr']:.4f} |"
+        )
 
     lines += ["", "## 按标签细分的 Recall@K", ""]
     all_tags = sorted({tag for s in summaries.values() for tag in s[f"tag_recall@{K}"]})
     header = "| 标签 | " + " | ".join(methods) + " |"
     lines += [header, "| --- | " + " | ".join(["---"] * len(methods)) + " |"]
     for tag in all_tags:
-        row = [f"{summaries[name][f'tag_recall@{K}'].get(tag, float('nan')):.4f}" for name in methods]
+        row = [
+            f"{summaries[name][f'tag_recall@{K}'].get(tag, float('nan')):.4f}"
+            for name in methods
+        ]
         lines.append(f"| {tag} | " + " | ".join(row) + " |")
 
     return "\n".join(lines) + "\n"
@@ -90,7 +95,9 @@ def main() -> None:
     settings = get_settings()
     cases = load_eval_cases(DEV_SET_PATH)
 
-    embedder = BgeEmbeddingAdapter(settings.embedding_model, settings.embedding_cache_dir)
+    embedder = BgeEmbeddingAdapter(
+        settings.embedding_model, settings.embedding_cache_dir
+    )
     client = connect_to_weaviate(settings)
     try:
         collection = ensure_knowledge_chunk_collection(client)
@@ -122,7 +129,9 @@ def main() -> None:
     MD_REPORT_PATH.write_text(_to_markdown(summaries), encoding="utf-8")
 
     for name, s in summaries.items():
-        print(f"{name}: Recall@{K}={s[f'recall@{K}']:.4f}  Precision@{K}={s[f'precision@{K}']:.4f}  MRR={s['mrr']:.4f}")
+        print(
+            f"{name}: Recall@{K}={s[f'recall@{K}']:.4f}  Precision@{K}={s[f'precision@{K}']:.4f}  MRR={s['mrr']:.4f}"
+        )
     print(f"报告已保存：{JSON_REPORT_PATH} 和 {MD_REPORT_PATH}")
 
 

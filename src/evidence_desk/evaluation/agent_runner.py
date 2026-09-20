@@ -109,7 +109,10 @@ def _run_case(
     # 这两种情况下才认它满足 agent.invoke() 要求的 TypedDict 参数类型，
     # 标成普通 dict[str, Any] 反而会被当成类型不匹配。
     config: RunnableConfig = {
-        "configurable": {"thread_id": f"eval-{case.id}", "user_id": f"eval-user-{case.id}"}
+        "configurable": {
+            "thread_id": f"eval-{case.id}",
+            "user_id": f"eval-user-{case.id}",
+        }
     }
 
     if case.setup_question is not None:
@@ -121,7 +124,9 @@ def _run_case(
 
     result = cast(
         dict[str, Any],
-        agent.invoke({"messages": [{"role": "user", "content": case.question}]}, config),
+        agent.invoke(
+            {"messages": [{"role": "user", "content": case.question}]}, config
+        ),
     )
 
     # 卡在审批点：评测场景下自动批准，让写操作真的执行，才能验证幂等/
@@ -162,7 +167,9 @@ def _run_case(
         answer=answer,
         step_count=step_count,
         route_ok=route_correct(case.expected_route, actual_tool_calls),
-        tool_selection_ok=tool_selection_correct(case.expected_tool_calls, actual_tool_calls),
+        tool_selection_ok=tool_selection_correct(
+            case.expected_tool_calls, actual_tool_calls
+        ),
         tool_argument_checks=[
             tool_arguments_valid(name, args) for name, args in tool_calls
         ],

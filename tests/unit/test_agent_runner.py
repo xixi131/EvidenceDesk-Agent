@@ -46,7 +46,9 @@ class FakeGitHubGateway:
             html_url="https://github.com/github/docs/actions/runs/123",
         )
 
-    def list_workflow_jobs(self, owner: str, repo: str, run_id: int) -> list[WorkflowJob]:
+    def list_workflow_jobs(
+        self, owner: str, repo: str, run_id: int
+    ) -> list[WorkflowJob]:
         return []
 
 
@@ -55,7 +57,12 @@ class FakeTicketService:
         self._next_id = 1
 
     def create_ticket(
-        self, *, idempotency_key: str, title: str, description: str, context_summary: str
+        self,
+        *,
+        idempotency_key: str,
+        title: str,
+        description: str,
+        context_summary: str,
     ) -> tuple[Ticket, bool]:
         from datetime import UTC, datetime
 

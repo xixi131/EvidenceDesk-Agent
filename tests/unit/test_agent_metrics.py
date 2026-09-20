@@ -36,7 +36,9 @@ def test_tool_selection_correct_requires_exact_set_match() -> None:
     )
     # 少调了期望的工具 -> 不对
     assert (
-        tool_selection_correct(["get_workflow_run", "list_workflow_jobs"], ["get_workflow_run"])
+        tool_selection_correct(
+            ["get_workflow_run", "list_workflow_jobs"], ["get_workflow_run"]
+        )
         is False
     )
     # 顺序不影响判断，只看集合
@@ -87,7 +89,10 @@ def test_write_without_approval_flags_unapproved_ticket_creation() -> None:
 
 
 def test_task_success_requires_all_keywords_case_insensitive() -> None:
-    assert task_success("你可以设置 ACTIONS_STEP_DEBUG 为 true", ["actions_step_debug"]) is True
+    assert (
+        task_success("你可以设置 ACTIONS_STEP_DEBUG 为 true", ["actions_step_debug"])
+        is True
+    )
     assert task_success("这是一个无关的回答", ["ACTIONS_STEP_DEBUG"]) is False
     # 没有关键词要求时，直接算成功
     assert task_success("随便什么回答", []) is True

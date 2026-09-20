@@ -127,7 +127,9 @@ def agent_chat(
         ),
     )
 
-    data = _build_response_data(result, conversation_id=conversation_id, user_id=user_id)
+    data = _build_response_data(
+        result, conversation_id=conversation_id, user_id=user_id
+    )
     return SuccessResponse(
         data=data,
         meta=ResponseMeta(request_id=request.state.request_id),
@@ -176,7 +178,9 @@ def agent_decision(
         ),
     )
 
-    data = _build_response_data(result, conversation_id=conversation_id, user_id=user_id)
+    data = _build_response_data(
+        result, conversation_id=conversation_id, user_id=user_id
+    )
     return SuccessResponse(
         data=data,
         meta=ResponseMeta(request_id=request.state.request_id),
