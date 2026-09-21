@@ -11,12 +11,20 @@
 
     这也是评测工程的通用做法：贵的东西一次性产出，廉价的东西反复重算。
 
-run 文件用 JSONL（一行一条记录），跟 dev_v1.jsonl 是同一个格式，理由也一样：
-可以用 head / grep 直接看，出问题时一行坏掉不影响其余行。
+run 文件用 JSONL（一行一条记录），跟 dev_v1.jsonl 是同一个格式。除了「能用
+head/grep 直接看」「一行坏掉不影响其余行」之外，这里还用上了它第三个好处：
+**可以追加**。
+
+这一点是被一次真实事故逼出来的：跑到一半时 LLM 服务返回 503，整个脚本崩掉，
+前面已经跑完的几十道题全部丢失，钱和时间都白花。改成「每跑完一题就立刻追加
+写盘 + 启动时跳过已完成的题」之后，崩了再跑一次就能从断点接上。
+
+如果 run 文件是一个大的 JSON 数组，就做不到这件事——数组必须整体写完才合法，
+中途崩掉留下的是一个语法不完整的破文件。
 """
 
 import json
-from collections.abc import Sequence
+from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import cast
@@ -116,47 +124,64 @@ class AnswerRunRecord:
         )
 
 
+def iter_answers(
+    cases: Sequence[EvalCase],
+    chat_service: ChatService,
+    *,
+    prompt_version: str = ANSWER_PROMPT_VERSION,
+) -> Iterator[AnswerRunRecord]:
+    """逐题生成答案，**每跑完一题就产出一条**，而不是等全部跑完才返回。
+
+    用生成器（yield）而不是返回列表，是为了让调用方能边跑边写盘。
+    返回列表的话，中途抛异常时这个列表还在函数内部，调用方一条都拿不到——
+    一次 503 就让前面几十次模型调用全白费。
+
+    其余设计同 generate_answers 的说明。
+    """
+
+    for index, case in enumerate(cases, start=1):
+        result = chat_service.answer_question(case.question)
+        print(f"  [{index}/{len(cases)}] {case.id} 完成")
+        yield AnswerRunRecord(
+            id=case.id,
+            question=case.question,
+            tags=case.tags,
+            should_answer=case.should_answer,
+            relevant_doc_ids=case.relevant_doc_ids,
+            answer=result.answer,
+            answered=result.answered,
+            citations=result.citations,
+            hits=result.hits,
+            prompt_version=prompt_version,
+        )
+
+
 def generate_answers(
     cases: Sequence[EvalCase],
     chat_service: ChatService,
     *,
     prompt_version: str = ANSWER_PROMPT_VERSION,
 ) -> list[AnswerRunRecord]:
-    """对每道题跑一次完整的「检索 → 证据约束回答」，收集结果。
+    """一次性跑完所有题并返回列表（测试和小批量用）。
 
-    直接复用 ChatService 而不是自己再串一遍检索和生成：评测必须测**生产
-    真正在跑的那条链路**。如果这里自己拼一套，哪天 ChatService 改了逻辑，
-    评测还在测老路径，跑出来的数字就跟线上对不上了。
-
-    这里**不做任何判分**。判分是 answer_metrics.py 的事，两者分开，
-    指标改一百遍也不用重调模型。
+    大批量跑请用 iter_answers + 追加写盘，这样中途崩了不会前功尽弃。
     """
 
-    records: list[AnswerRunRecord] = []
-    for index, case in enumerate(cases, start=1):
-        result = chat_service.answer_question(case.question)
-        records.append(
-            AnswerRunRecord(
-                id=case.id,
-                question=case.question,
-                tags=case.tags,
-                should_answer=case.should_answer,
-                relevant_doc_ids=case.relevant_doc_ids,
-                answer=result.answer,
-                answered=result.answered,
-                citations=result.citations,
-                hits=result.hits,
-                # ChatResult 没把 prompt_version 带出来（它只转发了 answer/
-                # answered/citations/hits 四个字段），所以从参数取，默认就是
-                # 当前那版常量。存它是为了让 run 文件能追溯到「这批答案是哪版
-                # 提示词生成的」——第 4 步改提示词加行内引用之后，新旧两批
-                # 结果必须能一眼分清，否则拿混了就是一场灾难。
-                prompt_version=prompt_version,
-            )
-        )
-        print(f"  [{index}/{len(cases)}] {case.id} 完成")
+    return list(iter_answers(cases, chat_service, prompt_version=prompt_version))
 
-    return records
+
+def append_run(record: AnswerRunRecord, path: Path) -> None:
+    """把一条记录追加到 run 文件末尾，并立刻刷盘。
+
+    "a" 是追加模式（append）：不清空原有内容，直接写到文件末尾。
+    flush() 强制把缓冲区的内容真正写进磁盘——不调它的话，内容可能还躺在
+    内存缓冲里，进程一崩就没了，那这套断点续传就白做了。
+    """
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(record.to_json_line() + "\n")
+        handle.flush()
 
 
 def save_run(records: Sequence[AnswerRunRecord], path: Path) -> None:

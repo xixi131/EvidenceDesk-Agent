@@ -207,6 +207,19 @@ class AnswerJudge:
         return _parse(case_id, text)
 
 
+def append_verdict(verdict: JudgeVerdict, path: Path) -> None:
+    """追加一条判定并立刻刷盘，支持断点续传。
+
+    跟 answer_runner.append_run 同理：judge 要调 48 次模型，
+    中途服务抖一下就前功尽弃。每判完一条就落盘，崩了能接着跑。
+    """
+
+    path.parent.mkdir(parents=True, exist_ok=True)
+    with path.open("a", encoding="utf-8") as handle:
+        handle.write(verdict.to_json_line() + "\n")
+        handle.flush()
+
+
 def save_verdicts(verdicts: Sequence[JudgeVerdict], path: Path) -> None:
     """判定结果也存成 JSONL —— judge 调用同样很贵，同样只跑一次。"""
 

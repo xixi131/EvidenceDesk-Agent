@@ -20,14 +20,17 @@ from pathlib import Path
 from typing import Any
 
 from evidence_desk.application.chat_service import ChatService
-from evidence_desk.application.rag_answer_service import RagAnswerService
+from evidence_desk.application.rag_answer_service import (
+    ANSWER_PROMPT_VERSION,
+    RagAnswerService,
+)
 from evidence_desk.core.config import get_settings
 from evidence_desk.evaluation.answer_judge import (
     JUDGE_PROMPT_VERSION,
     AnswerJudge,
     JudgeVerdict,
+    append_verdict,
     load_verdicts,
-    save_verdicts,
 )
 from evidence_desk.evaluation.answer_metrics import (
     detect_refusal,
@@ -40,9 +43,9 @@ from evidence_desk.evaluation.answer_metrics import (
 )
 from evidence_desk.evaluation.answer_runner import (
     AnswerRunRecord,
-    generate_answers,
+    append_run,
+    iter_answers,
     load_run,
-    save_run,
 )
 from evidence_desk.evaluation.dataset import load_eval_cases
 from evidence_desk.infrastructure.embedding import BgeEmbeddingAdapter
@@ -62,7 +65,14 @@ MD_REPORT_PATH = Path("data/evaluation/answer_eval_v1.md")
 
 
 def _run_generation() -> list[AnswerRunRecord]:
-    """阶段 A：装配生产同款链路，跑一遍全部题目。"""
+    """阶段 A：装配生产同款链路，跑一遍全部题目，**边跑边写盘**。
+
+    支持断点续传：run 文件里已经有结果的题直接跳过。
+    这是被一次真实事故逼出来的——跑到一半 LLM 服务返回 503，脚本崩掉，
+    前面几十次模型调用全白费。现在崩了再跑一次就从断点接上。
+
+    想重新跑全部题目时，删掉 run 文件即可。
+    """
 
     settings = get_settings()
     if not settings.openai_api_key:
@@ -72,9 +82,30 @@ def _run_generation() -> list[AnswerRunRecord]:
     # （没有标注相关文档，算不了 Recall），但 Refusal Accuracy 要测的恰恰
     # 就是这批「跑题问题」，一道都不能少。
     cases = load_eval_cases(DEV_SET_PATH)
+
+    # 断点续传：已经跑过的题跳过。注意要校验提示词版本——换了提示词之后
+    # 旧结果就不能用了，混在一起等于把两个不同系统的输出算成一份报告。
+    done: list[AnswerRunRecord] = []
+    if RUN_PATH.exists():
+        existing = load_run(RUN_PATH)
+        stale = [r for r in existing if r.prompt_version != ANSWER_PROMPT_VERSION]
+        if stale:
+            raise SystemExit(
+                f"{RUN_PATH} 里有 {len(stale)} 条是旧提示词版本"
+                f"（{stale[0].prompt_version}，当前是 {ANSWER_PROMPT_VERSION}）。"
+                "新旧结果不能混算，请先删除该文件再重跑。"
+            )
+        done = existing
+        print(f"续跑：已有 {len(done)} 条结果，跳过这些题")
+
+    done_ids = {r.id for r in done}
+    todo = [c for c in cases if c.id not in done_ids]
     print(
         f"共 {len(cases)} 道题（含 {sum(1 for c in cases if not c.should_answer)} 道应拒答）"
+        f"，本次要跑 {len(todo)} 道"
     )
+    if not todo:
+        return done
 
     embedder = BgeEmbeddingAdapter(
         settings.embedding_model, settings.embedding_cache_dir
@@ -102,7 +133,12 @@ def _run_generation() -> list[AnswerRunRecord]:
             answer_service,
             top_k=settings.retrieval_top_k,
         )
-        return generate_answers(cases, chat_service)
+        records = list(done)
+        # 每跑完一题就立刻追加写盘：中途崩了，已完成的部分留在文件里。
+        for record in iter_answers(todo, chat_service):
+            append_run(record, RUN_PATH)
+            records.append(record)
+        return records
     finally:
         client.close()
 
@@ -240,14 +276,17 @@ def _run_judge(records: list[AnswerRunRecord]) -> list[JudgeVerdict]:
         )
     )
 
-    targets = [r for r in records if _answered(r)]
-    print(f"judge 开始：{len(targets)} 道已回答的题（拒答题跳过）")
+    # 同样支持断点续传（judge 要调几十次模型，崩一次代价不小）。
+    done: list[JudgeVerdict] = load_verdicts(JUDGE_PATH) if JUDGE_PATH.exists() else []
+    done_ids = {v.case_id for v in done}
+    targets = [r for r in records if _answered(r) and r.id not in done_ids]
+    print(f"judge 开始：{len(targets)} 道待判（已有 {len(done)} 条，拒答题跳过）")
 
-    verdicts: list[JudgeVerdict] = []
+    verdicts = list(done)
     for index, record in enumerate(targets, start=1):
-        verdicts.append(
-            judge.judge(record.id, record.question, record.answer, record.hits)
-        )
+        verdict = judge.judge(record.id, record.question, record.answer, record.hits)
+        append_verdict(verdict, JUDGE_PATH)
+        verdicts.append(verdict)
         print(f"  [{index}/{len(targets)}] {record.id} 判完")
     return verdicts
 
@@ -529,8 +568,7 @@ def main() -> None:
         print(f"复用已有 run 文件：{RUN_PATH}（{len(records)} 条）")
     else:
         records = _run_generation()
-        save_run(records, RUN_PATH)
-        print(f"跑批结果已保存：{RUN_PATH}")
+        print(f"跑批结果已保存：{RUN_PATH}（{len(records)} 条）")
 
     settings = get_settings()
     payload: dict[str, Any] = {
@@ -552,7 +590,6 @@ def main() -> None:
             print(f"复用已有判定文件：{JUDGE_PATH}（{len(verdicts)} 条）")
         else:
             verdicts = _run_judge(records)
-            save_verdicts(verdicts, JUDGE_PATH)
             print(f"judge 判定已保存：{JUDGE_PATH}")
         payload["judge"] = _score_judge(verdicts, records)
 
