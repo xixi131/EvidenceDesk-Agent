@@ -103,6 +103,67 @@ def test_prompt_contains_context_question_and_temperature() -> None:
     assert "如何开启调试日志？" in user  # 用户问题也在 Prompt 里
 
 
+def test_low_score_refuses_without_calling_model() -> None:
+    """第 0 层闸门：检索置信度不够就直接拒答，连模型都不调。
+
+    这一层最可靠——分数是检索器算的客观数字，模型再不听话也影响不了它。
+    """
+
+    fake = FakeLLM("不该被调用")
+    service = RagAnswerService(fake, temperature=0.0, min_score=0.62)
+
+    # make_hit 造的 hit score=0.9，这里手工压到 0.3 模拟"捞到了但都不相关"
+    weak_hit = make_hit().model_copy(update={"score": 0.3})
+    result = service.answer("一个跑题的问题", [weak_hit])
+
+    assert result.answered is False
+    assert result.answer == NO_EVIDENCE_REPLY
+    assert fake.calls == []  # 完全没有调用大模型
+
+
+def test_score_above_threshold_still_calls_model() -> None:
+    """分数够就正常往下走——闸门不能把正常问题也挡住。"""
+
+    fake = FakeLLM("回答 [1]")
+    service = RagAnswerService(fake, temperature=0.0, min_score=0.62)
+
+    result = service.answer("正常问题", [make_hit()])  # score=0.9
+
+    assert result.answered is True
+    assert len(fake.calls) == 1
+
+
+def test_min_score_defaults_to_disabled() -> None:
+    """不传 min_score 时闸门不生效，老调用方行为完全不变。
+
+    这是让改动能安全上线的关键：默认值必须等价于"改动之前"。
+    """
+
+    fake = FakeLLM("回答 [1]")
+    service = RagAnswerService(fake, temperature=0.0)  # 没传 min_score
+
+    weak_hit = make_hit().model_copy(update={"score": 0.01})
+    result = service.answer("问题", [weak_hit])
+
+    assert result.answered is True
+    assert len(fake.calls) == 1
+
+
+def test_paraphrased_refusal_is_recognized() -> None:
+    """第 2 层兜底：模型换个说法拒答也要认得出。
+
+    老写法 `NO_EVIDENCE_REPLY not in text` 是一字不差的匹配，这条会判错。
+    """
+
+    fake = FakeLLM("抱歉，知识库里没有这方面的资料。")
+    service = RagAnswerService(fake, temperature=0.0)
+
+    result = service.answer("问题", [make_hit()])
+
+    assert result.answered is False
+    assert result.citations == []
+
+
 def test_no_hits_refuses_without_calling_model() -> None:
     fake = FakeLLM("不该被调用")
     service = RagAnswerService(fake, temperature=0.0)

@@ -8,11 +8,15 @@
 它只依赖 ``LLMClient`` 端口，不关心背后是真 OpenAI 还是测试假模型。
 """
 
+import logging
 from dataclasses import dataclass
 
 from evidence_desk.application.ports import LLMClient
+from evidence_desk.application.refusal import detect_refusal
 from evidence_desk.rag.citations import build_citations, parse_citation_markers
 from evidence_desk.rag.models import Citation, RetrievalHit
+
+logger = logging.getLogger("evidence_desk.answer")
 
 # Prompt 一旦改动就升版本号，让每条评测结果能追溯到「当时用的哪版提示词」。
 # v2（P6-06）：新增行内引用标号要求。改造动机见 rag/citations.py 的模块注释——
@@ -59,16 +63,33 @@ class RagAnswerService:
         *,
         temperature: float,
         prompt_version: str = ANSWER_PROMPT_VERSION,
+        min_score: float = 0.0,
     ) -> None:
+        # min_score 是第 0 层闸门：检索 Top-1 相关度低于它就直接拒答，
+        # 连模型都不调。默认 0.0 等于不设闸门——老调用方（测试、脚本）
+        # 不传这个参数时行为完全不变，改动才能安全上线。
         self._llm = llm
         self._temperature = temperature
         self._prompt_version = prompt_version
+        self._min_score = min_score
 
     def answer(self, question: str, hits: list[RetrievalHit]) -> AnswerResult:
         """把问题和检索结果变成一段有据可查的回答。"""
 
-        # 第一道防线：没有任何检索证据时，直接拒答，不浪费一次模型调用。
-        if not hits:
+        # 第 0 层（前置闸门）：证据不够就直接拒答，连模型都不调。
+        #
+        # 这一层最可靠，因为它**完全不依赖模型的行为**——分数是检索器算出来的
+        # 客观数字，模型再怎么不听话也影响不了它。顺带还省一次模型调用。
+        #
+        # 注意判断条件不能只写 `if not hits`：向量检索固定返回 top_k 条，
+        # 问「今天天气怎么样」它照样捞 5 条无关文档回来，hits 从不为空，
+        # 那个 if 永远不会触发。必须看**分数**，不是看条数。
+        if not hits or hits[0].score < self._min_score:
+            if hits:
+                logger.info(
+                    "检索置信度不足，前置拒答",
+                    extra={"top_score": hits[0].score, "min_score": self._min_score},
+                )
             return AnswerResult(
                 answer=NO_EVIDENCE_REPLY,
                 citations=[],
@@ -83,15 +104,32 @@ class RagAnswerService:
             temperature=self._temperature,
         ).strip()
 
-        # 第二道防线：模型判断资料不足、给出兜底拒答时，不附带引用。
-        answered = NO_EVIDENCE_REPLY not in text
+        # 第 2 层（文本兜底）：从回答文本里认出拒答意图。
+        #
+        # 原来这里是 `NO_EVIDENCE_REPLY not in text`——一字不差的精确匹配，
+        # 模型少个句号或换个说法就误判。更根本的问题是那等于**把程序的状态判断
+        # 交给一段自然语言**，而措辞由模型决定、不受我们控制。
+        # 换成 detect_refusal（去标点 + 多模式 + 长度兜底），跟评测侧共用同一份逻辑。
+        #
+        # 这一层本该只是兜底，主判断应该是第 1 层（让模型返回结构化的
+        # can_answer 字段）。第 1 层要改整个输出格式，本版未做，记在 ADR 里。
+        answered = not detect_refusal(text)
+
         # v2：先读出回答里标了哪些 [n]，再据此筛出引用。
-        # 注意这里**不做纠错**——模型没标任何标号时 citations 就是空的，
-        # 模型标了越界编号时那条被跳过。这两种都是真实的失败模式，
+        # 这里**不做纠错**——模型没标任何标号时 citations 就是空的，
+        # 标了越界编号时那条被跳过。两种都是真实的失败模式，
         # 要留给 Citation Correctness 指标去测，不能在生产侧悄悄抹平。
-        citations = (
-            build_citations(hits, parse_citation_markers(text)) if answered else []
-        )
+        markers = parse_citation_markers(text)
+        citations = build_citations(hits, markers) if answered else []
+
+        # 第 3 层（后置校验）：声称回答了，却一个引用标号都没标。
+        #
+        # 说明它没引用任何资料就给出了答案——要么在凭预训练知识作答，
+        # 要么其实在拒答只是没说清。**只打日志，不改判**：它有正常的例外
+        # （纯过渡性回答、寒暄），直接改判会误伤。先积累观测数据，
+        # 等看清真实发生率再决定要不要升级成硬判断。
+        if answered and not markers:
+            logger.warning("回答未标注任何引用", extra={"error_code": "NO_CITATION"})
 
         return AnswerResult(
             answer=text,

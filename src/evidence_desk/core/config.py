@@ -58,6 +58,14 @@ class Settings(BaseSettings):
     answer_model: str = "gpt-4o-mini"
     answer_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
 
+    # 拒答第 0 层闸门：检索 Top-1 相关度低于这个值就直接拒答，连模型都不调。
+    # 这一层不依赖模型的任何行为（分数是检索器算的客观数字），是四层里最可靠的一层。
+    # 0.62 来自 P6-02 的真实分数分布——落在 25 分位（0.6398）稍下方，
+    # 既不会永远不触发，也不会把正常问题挡在门外。
+    # 跟 query_rewrite_score_threshold 数值相同但**不共用一个配置项**：
+    # 两者用途不同（一个决定拒答，一个决定要不要改写重查），将来可能各自调整。
+    answer_min_score: float = Field(default=0.62, ge=0.0, le=1.0)
+
     # M-2 上下文超限策略：会话消息（近似）token 数达到这个阈值时，
     # ReAct Agent 会在下一次调模型前先把较早的消息摘要压缩，只保留最近
     # context_keep_messages 条原始消息 + 一段摘要文本，防止长对话把上下文塞爆。

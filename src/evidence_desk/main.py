@@ -64,7 +64,12 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         model=settings.answer_model,
         base_url=settings.openai_base_url,
     )
-    answer_service = RagAnswerService(llm, temperature=settings.answer_temperature)
+    answer_service = RagAnswerService(
+        llm,
+        temperature=settings.answer_temperature,
+        # 拒答第 0 层闸门（见 refusal.py 的四层说明）：检索置信度不够就直接拒答。
+        min_score=settings.answer_min_score,
+    )
     # ReAct Agent 的「大脑」：支持 function calling 的聊天模型（可配中转站 base_url）。
     chat_model = ChatOpenAI(
         model=settings.answer_model,

@@ -27,10 +27,16 @@ def test_detects_refusal_without_trailing_punctuation() -> None:
 
 
 def test_detects_paraphrased_refusal() -> None:
-    """模型换个说法照样是拒答。"""
+    """模型换个说法照样是拒答。
+
+    第三条是实现时踩的坑：第一版模式要求出现「相关」「对应」这类修饰词，
+    这句「没有这方面的资料」就漏了。写测试时被抓出来，模式已放宽。
+    """
 
     assert detect_refusal("抱歉，我无法回答这个问题。") is True
     assert detect_refusal("参考资料不足，没有相关内容。") is True
+    assert detect_refusal("抱歉，知识库里没有这方面的资料。") is True
+    assert detect_refusal("文档中未包含相关内容。") is True
 
 
 def test_normal_answer_is_not_a_refusal() -> None:

@@ -84,7 +84,12 @@ def _run_generation() -> list[AnswerRunRecord]:
         model=settings.answer_model,
         base_url=settings.openai_base_url,
     )
-    answer_service = RagAnswerService(llm, temperature=settings.answer_temperature)
+    answer_service = RagAnswerService(
+        llm,
+        temperature=settings.answer_temperature,
+        # 拒答第 0 层闸门（见 refusal.py 的四层说明）：检索置信度不够就直接拒答。
+        min_score=settings.answer_min_score,
+    )
 
     client = connect_to_weaviate(settings)
     try:
@@ -103,15 +108,12 @@ def _run_generation() -> list[AnswerRunRecord]:
 
 
 def _answered(record: AnswerRunRecord) -> bool:
-    """判分时重新判定「这题到底答了没」，不直接用 run 文件里的 answered。
+    """判分时重新判定「这题到底答了没」，不直接用 run 文件里存的 answered。
 
-    run 文件里那个 answered 来自生产代码的 `NO_EVIDENCE_REPLY not in text`，
-    是一字不差的精确匹配——模型少个句号、换个说法就会被判成「答了」，
-    于是一道拒答正确的题被记成漏拒。这里改用 detect_refusal（去标点 + 多模式
-    匹配）重判一次。
-
-    只在判分侧改、不动生产代码：生产那个 answered 还要决定「要不要附引用」，
-    改它风险大收益小；而评测只是想把数字算准，在这里重判最划算。
+    为什么要重判：run 文件是**历史产物**，里面的 answered 用的是当时那版判定
+    逻辑。生产侧现在已经换成 detect_refusal 了，但老的 run 文件还留着旧结果。
+    在这里统一重判，保证「同一批数据，换了判定逻辑就能重新算」——这正是
+    跑判分离的意义：判定逻辑可以演进，历史数据不用重跑。
     """
 
     return not detect_refusal(record.answer)
