@@ -36,6 +36,10 @@ class Settings(BaseSettings):
     embedding_cache_dir: Path = Path(".cache/huggingface")
     retrieval_top_k: int = Field(default=5, ge=1, le=50)
 
+    # Hybrid 检索里「向量 vs 关键词」的权重。1.0 = 纯向量，0.0 = 纯 BM25。
+    # 0.5 是 P6-03 实验用的值，也是 Weaviate 的默认值。
+    hybrid_alpha: float = Field(default=0.5, ge=0.0, le=1.0)
+
     # P6-05 重排：两段式检索里"粗筛捞多少条候选"。
     # 定成 20 是因为 Dense 的 Recall@20 = 1.0000（见 retrieval_eval_v1.md），
     # 也就是 20 条候选里必定含正确答案——粗筛不漏，重排才有意义。

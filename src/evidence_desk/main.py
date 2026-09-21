@@ -48,7 +48,7 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
         PostgresTicketRepository,
     )
     from evidence_desk.infrastructure.weaviate import (
-        WeaviateDenseRetriever,
+        WeaviateHybridRetriever,
         connect_to_weaviate,
         ensure_knowledge_chunk_collection,
     )
@@ -131,7 +131,18 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     client = connect_to_weaviate(settings)
     try:
         collection = ensure_knowledge_chunk_collection(client)
-        retriever = WeaviateDenseRetriever(collection)
+        # P6-09 冻结：生产检索用 Hybrid（向量 + BM25 关键词融合），不开重排。
+        #
+        # 为什么是 Hybrid 而不是 Dense：Recall@5 0.9608 vs 0.9314，高 3 个点，
+        # 而延迟只多 3 毫秒（13ms vs 10ms）——几乎是白拿的。
+        #
+        # 为什么不开重排：Dense+Rerank 能把 Recall@5 拉到 1.0000（全标签满分），
+        # 但延迟要 1390ms，是 110 倍。技术支持问答是交互场景，让用户每次多等
+        # 1.4 秒只为了那 4 个点，不划算。重排代码保留（RerankingRetriever +
+        # smoke_retrieval.py --rerank），离线批处理或延迟不敏感的场景可开启。
+        #
+        # alpha=0.5：向量和关键词各占一半。P6-03 实验用的就是这个值。
+        retriever = WeaviateHybridRetriever(collection, alpha=settings.hybrid_alpha)
         app.state.chat_service = ChatService(
             embedder,
             retriever,

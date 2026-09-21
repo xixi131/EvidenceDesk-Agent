@@ -51,7 +51,7 @@ from evidence_desk.evaluation.dataset import load_eval_cases
 from evidence_desk.infrastructure.embedding import BgeEmbeddingAdapter
 from evidence_desk.infrastructure.llm import OpenAIChatClient
 from evidence_desk.infrastructure.weaviate import (
-    WeaviateDenseRetriever,
+    WeaviateHybridRetriever,
     connect_to_weaviate,
     ensure_knowledge_chunk_collection,
 )
@@ -125,11 +125,13 @@ def _run_generation() -> list[AnswerRunRecord]:
     client = connect_to_weaviate(settings)
     try:
         collection = ensure_knowledge_chunk_collection(client)
-        # 跟 main.py 的装配保持一致：Dense 检索 + retrieval_top_k。
-        # 评测必须测生产真正在跑的那套配置，换了就不是同一个系统了。
+        # 跟 main.py 的装配保持一致：Hybrid 检索 + retrieval_top_k。
+        # 评测必须测生产真正在跑的那套配置，换了就不是同一个系统了——
+        # P6-09 把生产从 Dense 换成 Hybrid，这里必须同步换，
+        # 否则报告里的数字跟线上行为对不上。
         chat_service = ChatService(
             embedder,
-            WeaviateDenseRetriever(collection),
+            WeaviateHybridRetriever(collection, alpha=settings.hybrid_alpha),
             answer_service,
             top_k=settings.retrieval_top_k,
         )
@@ -362,7 +364,7 @@ def _to_markdown(payload: dict[str, Any]) -> str:
     lines = [
         "# 回答层评测报告（P6-06）",
         "",
-        f"- 检索方式：Dense，top_k={payload['top_k']}",
+        f"- 检索方式：Hybrid(alpha={payload['hybrid_alpha']})，top_k={payload['top_k']}",
         f"- 回答模型：`{payload['answer_model']}`",
         f"- 提示词版本：`{payload['prompt_version']}`",
         f"- 题目数：{refusal['num_cases']}"
@@ -573,6 +575,7 @@ def main() -> None:
     settings = get_settings()
     payload: dict[str, Any] = {
         "top_k": settings.retrieval_top_k,
+        "hybrid_alpha": settings.hybrid_alpha,
         "answer_model": settings.answer_model,
         # 从 run 文件里取，而不是从当前配置取——判分判的是「那一批答案」，
         # 提示词版本必须跟着那批答案走，不能跟着当前代码走。
