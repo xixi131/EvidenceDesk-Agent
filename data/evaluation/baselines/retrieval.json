@@ -1,0 +1,47 @@
+{
+  "eval": "retrieval",
+  "result_path": "data/evaluation/hybrid_retrieval_eval_v1.json",
+  "dataset_version": "github-actions-zh-2026-08-05-v1",
+  "approved_at": "2026-09-23",
+  "approved_commit": "be52f73",
+  "note": "P6-09 冻结的生产检索配置 = Hybrid(alpha 0.5)，不开重排。分数取自 P6-03 对比实验里的 Hybrid 一列。",
+  "tolerance_note": "检索层不调 LLM，同样的输入必定同样的输出，所以没有随机噪音。容差 0.01 小于「一道题翻转」的粒度 1/51=0.0196，意思是：只要有一道题的检索结果变了，就报红。这是有意的——确定性系统里任何变化都是真变化。",
+  "config": {
+    "k": 5,
+    "hybrid_alpha": 0.5,
+    "tokenizer_version": "jieba-0.42.1-domain-v1",
+    "methods.Hybrid.num_cases": 51
+  },
+  "metrics": {
+    "recall@5": {
+      "path": "methods.Hybrid.recall@5",
+      "value": 0.9608,
+      "direction": "higher_is_better",
+      "tolerance": 0.01
+    },
+    "mrr": {
+      "path": "methods.Hybrid.mrr",
+      "value": 0.901,
+      "direction": "higher_is_better",
+      "tolerance": 0.01
+    },
+    "precision@5": {
+      "path": "methods.Hybrid.precision@5",
+      "value": 0.2196,
+      "direction": "higher_is_better",
+      "tolerance": 0.01
+    },
+    "tag_recall@5.multi_document": {
+      "path": "methods.Hybrid.tag_recall@5.multi_document",
+      "value": 0.7778,
+      "direction": "higher_is_better",
+      "tolerance": 0.01
+    },
+    "tag_recall@5.exact_identifier": {
+      "path": "methods.Hybrid.tag_recall@5.exact_identifier",
+      "value": 0.9737,
+      "direction": "higher_is_better",
+      "tolerance": 0.01
+    }
+  }
+}

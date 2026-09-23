@@ -1,0 +1,54 @@
+{
+  "eval": "answer",
+  "result_path": "data/evaluation/answer_eval_v1.json",
+  "dataset_version": "github-actions-zh-2026-08-05-v1",
+  "approved_at": "2026-09-23",
+  "approved_commit": "be52f73",
+  "note": "P6-06 回答层四指标首轮基线（拒答闸门阈值已按真实分数分布标定到 0.52）。",
+  "tolerance_note": "回答层每题要调两次 LLM（生成 + 裁判），结果天然会抖，所以容差必须留够。取 0.05 的依据：判分基数 48 题，一道题翻转 = 1/48 = 0.0208，0.05 容得下两题抖动、第三题就报红。例外两个：unsupported（编造）是最严重的问题，收紧到 0.02；missed_refusal_rate 的分母只有 9 道该拒答的题，一题翻转就是 0.111，容差必须大于它，否则单题抖动天天误报。",
+  "config": {
+    "top_k": 5,
+    "answer_model": "gpt-5.5",
+    "prompt_version": "answer-v1",
+    "judge_prompt_version": "judge-v1",
+    "refusal.num_cases": 60
+  },
+  "metrics": {
+    "faithfulness.supported": {
+      "path": "judge.faithfulness.supported",
+      "value": 0.8958,
+      "direction": "higher_is_better",
+      "tolerance": 0.05
+    },
+    "faithfulness.unsupported": {
+      "path": "judge.faithfulness.unsupported",
+      "value": 0.0,
+      "direction": "lower_is_better",
+      "tolerance": 0.02
+    },
+    "answer_quality.correct": {
+      "path": "judge.answer_quality.correct",
+      "value": 0.9583,
+      "direction": "higher_is_better",
+      "tolerance": 0.05
+    },
+    "refusal.accuracy": {
+      "path": "refusal.accuracy",
+      "value": 0.9167,
+      "direction": "higher_is_better",
+      "tolerance": 0.05
+    },
+    "refusal.over_refusal_rate": {
+      "path": "refusal.over_refusal_rate",
+      "value": 0.0784,
+      "direction": "lower_is_better",
+      "tolerance": 0.05
+    },
+    "refusal.missed_refusal_rate": {
+      "path": "refusal.missed_refusal_rate",
+      "value": 0.1111,
+      "direction": "lower_is_better",
+      "tolerance": 0.12
+    }
+  }
+}
