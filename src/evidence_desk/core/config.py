@@ -62,6 +62,14 @@ class Settings(BaseSettings):
     answer_model: str = "gpt-4o-mini"
     answer_temperature: float = Field(default=0.0, ge=0.0, le=2.0)
 
+    # 成本核算用的单价：每一百万 token 多少美元，输入和输出分开
+    # （输出价通常是输入价的好几倍，合成一个单价会把成本估偏）。
+    # 默认 0.0 = 不算钱：价格取决于你用官方还是中转站，代码里写死任何数字
+    # 都是瞎编。按你的实际价目填进 .env 就会在日志里出现金额，不填也不影响
+    # token 数照常记录。
+    llm_input_price_per_1m_usd: float = Field(default=0.0, ge=0.0)
+    llm_output_price_per_1m_usd: float = Field(default=0.0, ge=0.0)
+
     # 拒答第 0 层闸门：检索 Top-1 相关度低于这个值就直接拒答，连模型都不调。
     # 这一层不依赖模型的任何行为（分数是检索器算的客观数字），是四层里最可靠的一层。
     #
@@ -87,6 +95,21 @@ class Settings(BaseSettings):
     # M-3 长期用户画像记忆：recall_user_memory 工具一次最多检索几条相关的历史记忆
     # 返回给模型看，跟 retrieval_top_k 是同一个模式（都是「一次检索返回几条」）。
     long_term_memory_top_k: int = Field(default=5, ge=1, le=20)
+
+    # Agent 限流：两次真正调用模型之间至少间隔多少秒，防止 ReAct 循环里连续
+    # 好几次工具调用把 API 打爆、或者账单涨得太快。
+    # 0.5 是个起点，不是精确调出来的值——以后有真实流量了再回头调整。
+    agent_rate_limit_min_interval_seconds: float = Field(default=0.5, ge=0.0)
+
+    # Agent 响应缓存：完全相同的请求（历史消息+模型+温度都一样）最多缓存多少条，
+    # 存满了淘汰最久没被用过的那条（LRU）。
+    agent_response_cache_max_entries: int = Field(default=256, ge=1)
+
+    # Agent 失败重试：网络问题/对方临时故障（连接失败、超时、5xx、429）时，
+    # 最多重试几次、第一次重试前等多久（之后按 2 的次方指数退避）。
+    # 3 次、1 秒是保守的起点，不是精确调出来的值。
+    agent_retry_max_attempts: int = Field(default=3, ge=1)
+    agent_retry_base_delay_seconds: float = Field(default=1.0, ge=0.0)
 
 
 @lru_cache

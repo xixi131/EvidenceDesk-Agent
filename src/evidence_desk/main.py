@@ -171,6 +171,10 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
             store=memory_store,
             memory_top_k=settings.long_term_memory_top_k,
             ticket_service=ticket_service,
+            rate_limit_min_interval_seconds=settings.agent_rate_limit_min_interval_seconds,
+            response_cache_max_entries=settings.agent_response_cache_max_entries,
+            retry_max_attempts=settings.agent_retry_max_attempts,
+            retry_base_delay_seconds=settings.agent_retry_base_delay_seconds,
         )
         yield
     finally:

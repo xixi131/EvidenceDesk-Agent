@@ -10,6 +10,9 @@ from langgraph.checkpoint.base import BaseCheckpointSaver
 from langgraph.graph.state import CompiledStateGraph
 from langgraph.store.base import BaseStore
 
+from evidence_desk.agent.rate_limit_middleware import RateLimitMiddleware
+from evidence_desk.agent.response_cache_middleware import LLMResponseCacheMiddleware
+from evidence_desk.agent.retry_middleware import RetryMiddleware
 from evidence_desk.agent.tools import build_agent_tools
 from evidence_desk.application.ports import ChunkRetriever, GitHubGateway, QueryEmbedder
 from evidence_desk.application.ticket_service import TicketService
@@ -51,6 +54,10 @@ def build_react_agent(
     store: BaseStore | None = None,
     memory_top_k: int = 5,
     ticket_service: TicketService | None = None,
+    rate_limit_min_interval_seconds: float | None = None,
+    response_cache_max_entries: int | None = None,
+    retry_max_attempts: int | None = None,
+    retry_base_delay_seconds: float = 1.0,
 ) -> CompiledStateGraph[Any, Any, Any, Any]:
     """装配并编译一个绑定工具的 ReAct Agent（checkpointer 提供多轮记忆）。
 
@@ -89,6 +96,29 @@ def build_react_agent(
     #    并且这个替换结果会写回 checkpointer，所以是持久化压缩，不是临时展示。
     #    它还会保证不会把 AIMessage 的 tool_calls 和对应 ToolMessage 拆开保留/摘要。
     middleware: list[Any] = []
+
+    # 缓存排最前面（最外层）：命中了直接把答案甩回去，连限流都不用走。
+    if response_cache_max_entries is not None:
+        middleware.append(
+            LLMResponseCacheMiddleware(max_entries=response_cache_max_entries)
+        )
+
+    # 限流排缓存后面：真要打模型的时候，才需要控制打的节奏。
+    if rate_limit_min_interval_seconds is not None:
+        middleware.append(
+            RateLimitMiddleware(min_interval_seconds=rate_limit_min_interval_seconds)
+        )
+
+    # 重试排最里面（最内层）：直接贴着真正发请求那一步，网络问题/对方临时
+    # 故障时原地重试，不占用限流的等待节奏，也不需要重新查一遍缓存。
+    if retry_max_attempts is not None:
+        middleware.append(
+            RetryMiddleware(
+                max_attempts=retry_max_attempts,
+                base_delay_seconds=retry_base_delay_seconds,
+            )
+        )
+
     if summary_trigger_tokens is not None:
         middleware.append(
             SummarizationMiddleware(
