@@ -44,7 +44,11 @@ class ChatService:
         """把用户问题变成有据可查的回答。"""
 
         query_vector = self._embedder.embed_query(question)
-        hits = self._retriever.search(query_vector, top_k=self._top_k)
+        # query_text 必须传，理由同 agent/tools.py 的 search_docs：
+        # 生产检索是 Hybrid，BM25 那一半需要原始问题文本才能算关键词得分。
+        hits = self._retriever.search(
+            query_vector, top_k=self._top_k, query_text=question
+        )
         result = self._answer_service.answer(question, hits)
         return ChatResult(
             answer=result.answer,

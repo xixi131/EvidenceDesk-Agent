@@ -21,10 +21,15 @@ class FakeEmbedder:
 
 
 class FakeRetriever:
+    # 签名跟 ChunkRetriever 端口保持一致，含 query_text（Hybrid 检索必需）。
     def __init__(self, hits: list[RetrievalHit]) -> None:
         self._hits = hits
+        self.received_query_text: str | None = None
 
-    def search(self, query_vector: list[float], *, top_k: int) -> list[RetrievalHit]:
+    def search(
+        self, query_vector: list[float], *, top_k: int, query_text: str | None = None
+    ) -> list[RetrievalHit]:
+        self.received_query_text = query_text
         return self._hits[:top_k]
 
 
@@ -50,19 +55,25 @@ def make_hit() -> RetrievalHit:
     )
 
 
-def install_chat_service(*, hits: list[RetrievalHit], reply: str) -> None:
+def install_chat_service(*, hits: list[RetrievalHit], reply: str) -> FakeRetriever:
     answer_service = RagAnswerService(FakeLLM(reply), temperature=0.0)
+    retriever = FakeRetriever(hits)
     app.state.chat_service = ChatService(
         FakeEmbedder(),
-        FakeRetriever(hits),
+        retriever,
         answer_service,
         top_k=5,
     )
+    return retriever
 
 
 @pytest.mark.asyncio
 async def test_chat_returns_answer_with_citation() -> None:
-    install_chat_service(hits=[make_hit()], reply="将 ACTIONS_STEP_DEBUG 设为 true。")
+    # 回答里必须带 [1] 标号：P6-06 之后引用不再是「把检索到的都列上」，
+    # 而是只列模型自己标注过的那几条（见 rag_answer_service 的 v2 注释）。
+    install_chat_service(
+        hits=[make_hit()], reply="将 ACTIONS_STEP_DEBUG 设为 true。[1]"
+    )
 
     transport = ASGITransport(app=app)
     async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
@@ -74,11 +85,32 @@ async def test_chat_returns_answer_with_citation() -> None:
     body = response.json()
     assert body["ok"] is True
     assert body["data"]["answered"] is True
-    assert body["data"]["answer"] == "将 ACTIONS_STEP_DEBUG 设为 true。"
+    assert body["data"]["answer"] == "将 ACTIONS_STEP_DEBUG 设为 true。[1]"
     assert body["data"]["citations"][0]["source_url"] == (
         "https://docs.github.com/enable-debug-logging"
     )
     assert body["meta"]["request_id"]
+
+
+@pytest.mark.asyncio
+async def test_chat_answer_without_markers_has_no_citations() -> None:
+    """答了但一个标号都没标 → 照样返回答案，但引用是空的。
+
+    这是 P6-06 有意保留的失败模式：生产侧不做纠错（不把检索到的硬塞进引用），
+    让它暴露出来交给 Citation 指标去测。这条测试就是钉住这个行为，
+    免得哪天有人「顺手修一下」，把真实失败率抹平了。
+    """
+    install_chat_service(hits=[make_hit()], reply="将 ACTIONS_STEP_DEBUG 设为 true。")
+
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        response = await client.post(
+            "/api/v1/chat", json={"question": "如何开启调试日志？"}
+        )
+
+    body = response.json()
+    assert body["data"]["answered"] is True
+    assert body["data"]["citations"] == []
 
 
 @pytest.mark.asyncio
@@ -95,6 +127,18 @@ async def test_chat_without_evidence_refuses() -> None:
     body = response.json()
     assert body["data"]["answered"] is False
     assert body["data"]["citations"] == []
+
+
+@pytest.mark.asyncio
+async def test_chat_passes_query_text_to_the_retriever() -> None:
+    """跟 search_docs 同一个回归点：漏传 query_text，生产的 Hybrid 检索就抛错。"""
+    retriever = install_chat_service(hits=[make_hit()], reply="回答[1]")
+
+    transport = ASGITransport(app=app)
+    async with httpx.AsyncClient(transport=transport, base_url="http://test") as client:
+        await client.post("/api/v1/chat", json={"question": "如何开启调试日志？"})
+
+    assert retriever.received_query_text == "如何开启调试日志？"
 
 
 @pytest.mark.asyncio

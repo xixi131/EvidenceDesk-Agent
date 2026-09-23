@@ -45,7 +45,12 @@ def build_agent_tools(
         当用户询问 GitHub Actions 的用法、概念、配置或故障排查等知识性问题时使用。
         query 请用简洁的检索关键词（可对用户口语做提炼）。回答时应引用返回的来源链接。
         """
-        hits = retriever.search(embedder.embed_query(query), top_k=top_k)
+        # query_text 必须传：P6-09 把生产检索冻结成 Hybrid，而 Hybrid 的
+        # BM25 那一半是按关键词匹配的，拿不到原文就没法算分（会直接抛错）。
+        # 端口上它是可选参数（Dense 用不着），但生产用的实现里是必需的。
+        hits = retriever.search(
+            embedder.embed_query(query), top_k=top_k, query_text=query
+        )
         if not hits:
             return "未检索到相关文档。"
         blocks = [

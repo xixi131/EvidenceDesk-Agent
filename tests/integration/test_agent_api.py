@@ -34,7 +34,10 @@ class FakeEmbedder:
 
 
 class FakeRetriever:
-    def search(self, query_vector: list[float], *, top_k: int) -> list[RetrievalHit]:
+    # 签名跟 ChunkRetriever 端口保持一致，含 query_text（Hybrid 检索必需）。
+    def search(
+        self, query_vector: list[float], *, top_k: int, query_text: str | None = None
+    ) -> list[RetrievalHit]:
         return []
 
 
