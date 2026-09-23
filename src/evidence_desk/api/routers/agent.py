@@ -1,12 +1,16 @@
 """基于 LangGraph ReAct Agent 的问答路由。"""
 
+import logging
 import uuid
+from time import perf_counter
 from typing import Any, cast
 
 from fastapi import APIRouter, Request
 from langchain_core.messages import AIMessage, ToolMessage
+from langgraph.graph.state import CompiledStateGraph
 from langgraph.types import Command
 
+from evidence_desk.agent.usage import UsageCollector, estimate_cost_usd
 from evidence_desk.api.dependencies import AgentDependency
 from evidence_desk.api.schemas.chat import (
     AgentChatRequest,
@@ -15,8 +19,70 @@ from evidence_desk.api.schemas.chat import (
     PendingApprovalView,
 )
 from evidence_desk.api.schemas.common import ResponseMeta, SuccessResponse
+from evidence_desk.core.config import get_settings
 
 router = APIRouter(tags=["agent"])
+
+logger = logging.getLogger("evidence_desk.agent")
+
+
+def _invoke_with_usage(
+    agent: CompiledStateGraph[Any, Any, Any, Any],
+    payload: Any,
+    *,
+    request: Request,
+    conversation_id: str,
+    user_id: str,
+) -> dict[str, Any]:
+    """跑一次 Agent，并把这一轮的开销记进日志。
+
+    两个入口（chat 和 decisions）都走这里，免得统计口径写两份、慢慢跑偏。
+
+    UsageCollector 每次请求新建一个：它是有状态的累加器，复用会把上一次请求
+    的 token 算进这一次。挂在 callbacks 上之后，LangGraph 会把它一路传到内层
+    的模型调用和工具调用上，所以不用改 Agent 本身的任何代码。
+    """
+    settings = get_settings()
+    collector = UsageCollector()
+    started_at = perf_counter()
+
+    result = cast(
+        dict[str, Any],
+        agent.invoke(
+            payload,
+            {
+                "configurable": {"thread_id": conversation_id, "user_id": user_id},
+                "callbacks": [collector],
+            },
+        ),
+    )
+
+    usage = collector.snapshot()
+    logger.info(
+        "Agent 调用完成",
+        extra={
+            "request_id": request.state.request_id,
+            "conversation_id": conversation_id,
+            "model": usage.model,
+            "llm_calls": usage.llm_calls,
+            "input_tokens": usage.input_tokens,
+            "output_tokens": usage.output_tokens,
+            "total_tokens": usage.total_tokens,
+            "cost_usd": round(
+                estimate_cost_usd(
+                    usage,
+                    input_price_per_1m=settings.llm_input_price_per_1m_usd,
+                    output_price_per_1m=settings.llm_output_price_per_1m_usd,
+                ),
+                6,
+            ),
+            "tool_calls": usage.tool_calls,
+            # 跟 HTTP 中间件的 latency_ms 分开记：那个含 FastAPI 的收发开销，
+            # 这个只算 Agent 循环本身，两个数一减就知道开销在框架还是在模型。
+            "agent_latency_ms": round((perf_counter() - started_at) * 1000, 2),
+        },
+    )
+    return result
 
 
 def _build_response_data(
@@ -119,12 +185,12 @@ def agent_chat(
     #        也是阶段 5 HITL 恢复执行时用来找到「暂停在哪」的 key；
     #        user_id 给 save_user_memory/recall_user_memory 这两个工具用来确定
     #        「记的是谁」——工具内部通过 get_config() 读回这个值（见 tools.py）。
-    result = cast(
-        dict[str, Any],
-        agent.invoke(
-            {"messages": [{"role": "user", "content": payload.question}]},
-            {"configurable": {"thread_id": conversation_id, "user_id": user_id}},
-        ),
+    result = _invoke_with_usage(
+        agent,
+        {"messages": [{"role": "user", "content": payload.question}]},
+        request=request,
+        conversation_id=conversation_id,
+        user_id=user_id,
     )
 
     data = _build_response_data(
@@ -170,12 +236,12 @@ def agent_decision(
     # `interrupt(hitl_request)["decisions"]` 原样接收——所以这里必须传成
     # {"decisions": [...]} 这个形状，跟 action_requests 一一对应
     # （目前只有一个写工具，所以 decisions 列表里也只放一条）。
-    result = cast(
-        dict[str, Any],
-        agent.invoke(
-            Command(resume={"decisions": [decision]}),
-            {"configurable": {"thread_id": conversation_id, "user_id": user_id}},
-        ),
+    result = _invoke_with_usage(
+        agent,
+        Command(resume={"decisions": [decision]}),
+        request=request,
+        conversation_id=conversation_id,
+        user_id=user_id,
     )
 
     data = _build_response_data(

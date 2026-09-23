@@ -23,6 +23,18 @@ class JsonFormatter(logging.Formatter):
             "status_code",
             "latency_ms",
             "error_code",
+            # 一次 Agent 调用的开销（agent/usage.py 采集，agent 路由负责记录）。
+            # 跟上面的 HTTP 字段共用同一条白名单：想上日志的字段必须先登记在
+            # 这里，避免哪天有人往 extra 里塞了 API Key 就直接进了日志。
+            "conversation_id",
+            "model",
+            "llm_calls",
+            "input_tokens",
+            "output_tokens",
+            "total_tokens",
+            "cost_usd",
+            "tool_calls",
+            "agent_latency_ms",
         ):
             value = getattr(record, field, None)
             if value is not None:
